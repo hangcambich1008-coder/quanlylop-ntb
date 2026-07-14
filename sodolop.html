@@ -5,13 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sơ Đồ Lớp & Trực Nhật - GVCN Cam Bích Hằng</title>
     
-    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     
     <style>
         :root { 
@@ -20,7 +20,12 @@
             --bg-body: #f8fafc; --text-main: #1e293b; --text-muted: #64748b; --border-color: #e2e8f0;
         }
 
-        body { font-family: 'Nunito', sans-serif; background-color: var(--bg-body); background-image: radial-gradient(#cbd5e1 1.5px, transparent 1.5px); background-size: 30px 30px; margin: 0; color: var(--text-main); line-height: 1.5;}
+        body, input, select, button, textarea { 
+            font-family: 'Inter', system-ui, -apple-system, sans-serif; 
+            color: var(--text-main); 
+        }
+
+        body { background-color: var(--bg-body); background-image: radial-gradient(#cbd5e1 1.5px, transparent 1.5px); background-size: 30px 30px; margin: 0; line-height: 1.5;}
         
         .header { background: linear-gradient(135deg, var(--primary-orange), var(--dark-orange)); color: white; padding: 25px 20px; text-align: center; box-shadow: 0 10px 30px rgba(234, 88, 12, 0.25); border-bottom-left-radius: 40px; border-bottom-right-radius: 40px; margin-bottom: 40px; position: relative;}
         .header h1 { margin: 0 0 5px 0; font-weight: 900; font-size: 1.9em; text-transform: uppercase; letter-spacing: 1px;}
@@ -34,7 +39,7 @@
         
         /* Tabs */
         .tabs { display: flex; gap: 15px; margin-bottom: 30px; border-bottom: 3px solid var(--border-color); padding-bottom: 0;}
-        .tab-btn { padding: 16px 30px; border: none; background: transparent; font-size: 15.5px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; cursor: pointer; border-radius: 14px 14px 0 0; transition: 0.3s;}
+        .tab-btn { padding: 16px 30px; border: none; background: transparent; font-family: 'Inter', sans-serif; font-size: 15.5px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; cursor: pointer; border-radius: 14px 14px 0 0; transition: 0.3s;}
         .tab-btn:hover { background: #f1f5f9; color: var(--primary-orange); }
         .tab-btn.active { background: white; color: var(--dark-orange); border: 3px solid var(--border-color); border-bottom: 3px solid white; margin-bottom: -3px; box-shadow: 0 -4px 10px rgba(0,0,0,0.02);}
         .tab-content { display: none; }
@@ -43,13 +48,15 @@
 
         /* Tiện ích Buttons */
         .action-bar { display: flex; justify-content: space-between; margin-bottom: 25px; align-items: center; flex-wrap: wrap; gap: 15px;}
-        .btn { padding: 12px 22px; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; font-size: 14px; color: white; display: inline-flex; align-items: center; gap: 8px; transition: 0.3s; font-family: inherit; box-shadow: 0 4px 6px rgba(0,0,0,0.05);}
+        .btn { padding: 12px 22px; border: none; border-radius: 12px; font-family: 'Inter', sans-serif; font-weight: 800; cursor: pointer; font-size: 14px; color: white; display: inline-flex; align-items: center; gap: 8px; transition: 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.05);}
         .btn:hover { transform: translateY(-3px); box-shadow: 0 8px 15px rgba(0,0,0,0.15); filter: brightness(0.95); }
         .btn-random { background: linear-gradient(135deg, var(--info), #0284c7); }
         .btn-save { background: linear-gradient(135deg, var(--success), #059669); }
         .btn-export { background: linear-gradient(135deg, #f59e0b, #d97706); }
         .btn-newweek { background: linear-gradient(135deg, var(--purple), #6d28d9); }
         .btn-danger { background: linear-gradient(135deg, var(--danger), #dc2626); }
+        .btn-review { background: linear-gradient(135deg, #0ea5e9, #0284c7); box-shadow: 0 4px 10px rgba(14, 165, 233, 0.3); }
+        .btn-pack { background: linear-gradient(135deg, #3b82f6, #2563eb); } /* Nút Dồn Lịch */
 
         /* THÔNG TIN CẤU HÌNH LỚP */
         .class-info-panel { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; background: #f8fafc; padding: 25px; border-radius: 16px; margin-bottom: 25px; border: 1px solid var(--border-color); }
@@ -57,7 +64,7 @@
         .class-info-panel label { font-size: 13px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;}
         .class-info-panel input { padding: 12px 15px; border-radius: 10px; border: 1px solid #cbd5e1; font-weight: 700; font-family: inherit; font-size: 15px; outline: none; transition: 0.3s; color: var(--text-main);}
         .class-info-panel input:focus { border-color: var(--primary-orange); box-shadow: 0 0 0 4px var(--light-orange); background: white;}
-        .class-info-panel input[readonly] { background: #f1f5f9; color: var(--info); border-color: transparent; }
+        .class-info-panel input[readonly] { background: #e2e8f0; color: var(--info-dark); border-color: transparent; cursor: not-allowed; font-weight: 800;}
 
         /* KIỂU DÁNG SƠ ĐỒ LỚP HỌC */
         .classroom-layout { background: white; border: 2px solid var(--border-color); border-radius: 20px; padding: 35px; position: relative; box-shadow: inset 0 0 20px rgba(0,0,0,0.01);}
@@ -85,7 +92,7 @@
         .layout-box { border-radius: 14px; text-align: center; font-weight: 900; display: flex; align-items: center; justify-content: center; height: 55px;}
         .box-board { background: #334155; color: white; border: 4px solid #1e293b; font-size: 18px; text-transform: uppercase; box-shadow: 0 10px 20px rgba(0,0,0,0.1);}
         .box-select { background: #fff7ed; border: 2px dashed var(--primary-orange); transition: 0.3s; padding: 5px;}
-        .box-select select { width: 100%; height: 100%; border: none; background: transparent; font-weight: 900; color: var(--dark-orange); text-align: center; font-size: 16px; outline: none; cursor: pointer; text-align-last: center;}
+        .box-select select { width: 100%; height: 100%; border: none; background: transparent; font-family: 'Inter', sans-serif; font-weight: 900; color: var(--dark-orange); text-align: center; font-size: 16px; outline: none; cursor: pointer; text-align-last: center;}
 
         /* BẢNG CHUNG */
         .schedule-table { width: 100%; border-collapse: separate; border-spacing: 0; background: white; border-radius: 16px; overflow: hidden; border: 1px solid var(--border-color); box-shadow: 0 4px 6px rgba(0,0,0,0.02);}
@@ -95,25 +102,25 @@
         .schedule-table tr:hover td { background: #f8fafc; }
         
         /* TRỰC NHẬT TẠI LỚP */
-        .duty-sel-group { padding: 10px; border-radius: 10px; border: 2px solid var(--info); font-weight: 900; color: var(--info); background: #f0f9ff; outline: none; width: 100%; cursor: pointer; font-size: 14px;}
+        .duty-sel-group { padding: 10px; border-radius: 10px; border: 2px solid var(--info); font-family: 'Inter', sans-serif; font-weight: 900; color: var(--info); background: #f0f9ff; outline: none; width: 100%; cursor: pointer; font-size: 14px;}
         .duty-sel-group.phat { border-color: var(--danger); color: var(--danger); background: #fef2f2; }
         .duty-sel-group.khac { border-color: var(--purple); color: var(--purple); background: #faf5ff; }
-        .duty-sel-desk { padding: 10px; border-radius: 10px; border: 1px solid #cbd5e1; font-weight: 800; width: 100%; outline: none; background: white; font-size: 14px;}
+        .duty-sel-desk { padding: 10px; border-radius: 10px; border: 1px solid #cbd5e1; font-family: 'Inter', sans-serif; font-weight: 800; width: 100%; outline: none; background: white; font-size: 14px;}
         
         .student-box { background: white; border: 1px solid #cbd5e1; padding: 10px; border-radius: 10px; font-weight: 800; color: var(--text-main); min-height: 22px; display: flex; align-items: center; justify-content: center; font-size: 14px; margin-bottom: 8px;}
         .student-box.phat-select, .student-box.khac-select { padding: 0; border: none; background: transparent;}
-        .student-box.phat-select select { width: 100%; padding: 10px; border-radius: 10px; border: 2px solid var(--danger); font-weight: bold; color: var(--danger); background: #fef2f2; outline: none;}
-        .student-box.khac-select select { width: 100%; padding: 10px; border-radius: 10px; border: 2px solid var(--purple); font-weight: bold; color: var(--purple); background: #faf5ff; outline: none;}
+        .student-box.phat-select select { width: 100%; padding: 10px; border-radius: 10px; border: 2px solid var(--danger); font-family: 'Inter', sans-serif; font-weight: bold; color: var(--danger); background: #fef2f2; outline: none;}
+        .student-box.khac-select select { width: 100%; padding: 10px; border-radius: 10px; border: 2px solid var(--purple); font-family: 'Inter', sans-serif; font-weight: bold; color: var(--purple); background: #faf5ff; outline: none;}
 
         .task-tags { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 8px;}
         .task-tags label { cursor: pointer; font-size: 12px; font-weight: 800; user-select: none; }
         .task-tags input[type="checkbox"] { display: none; }
         .task-tags span { display: inline-block; padding: 6px 12px; border-radius: 20px; border: 1px solid #cbd5e1; background: #f8fafc; color: #64748b; transition: all 0.2s; white-space: nowrap;}
         .task-tags input[type="checkbox"]:checked + span { background: var(--info); color: white; border-color: var(--info); box-shadow: 0 4px 10px rgba(14, 165, 233, 0.2);}
-        .task-other-input { width: 90%; padding: 8px 12px; border-radius: 10px; border: 1px dashed #cbd5e1; font-size: 13px; outline: none; text-align: center; background: #f8fafc;}
+        .task-other-input { width: 90%; padding: 8px 12px; border-radius: 10px; border: 1px dashed #cbd5e1; font-family: 'Inter', sans-serif; font-size: 13px; outline: none; text-align: center; background: #f8fafc;}
         .task-other-input:focus { border-style: solid; border-color: var(--info); background: white;}
 
-        .eval-input { width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 13px; outline: none; text-align: center; box-sizing: border-box;}
+        .eval-input { width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #cbd5e1; font-family: 'Inter', sans-serif; font-size: 13px; outline: none; text-align: center; box-sizing: border-box;}
         .eval-input.good { border-color: var(--success); color: var(--success); font-weight: 800; background: #ecfdf5;}
         .eval-input.bad { border-color: var(--danger); color: var(--danger); font-weight: 800; background: #fef2f2;}
 
@@ -121,7 +128,11 @@
         .warning-box { background: #fef2f2; border: 2px dashed var(--danger); padding: 20px; border-radius: 16px; margin-bottom: 25px; display: none;}
         .warning-box h3 { margin: 0 0 12px 0; color: var(--danger); font-size: 16px; display: flex; align-items: center; gap: 8px;}
         .warning-tags { display: flex; flex-wrap: wrap; gap: 10px; }
-        .w-tag { background: white; border: 1px solid var(--danger); color: var(--danger); padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: 800;}
+        .w-tag { background: white; border: 1px solid var(--danger); color: var(--danger); padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: 800; display: flex; align-items: center;}
+        
+        /* Nút tắt thủ công cảnh báo bù */
+        .btn-dismiss-warning { border: none; background: transparent; color: inherit; font-size: 15px; font-weight: 900; margin-left: 8px; cursor: pointer; transition: 0.2s; padding: 0 4px; border-radius: 50%;}
+        .btn-dismiss-warning:hover { background: rgba(239,68,68,0.1); transform: scale(1.1); }
 
         /* THỐNG KÊ CARDS */
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-bottom: 30px;}
@@ -133,6 +144,21 @@
         .s-list-item .score { padding: 4px 12px; border-radius: 12px; font-size: 13px;}
         .good .score { background: #ecfdf5; color: #047857;}
         .bad .score { background: #fef2f2; color: #b91c1c;}
+
+        /* CỬA SỔ MODAL CHUNG */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; opacity: 0; transition: 0.2s;}
+        .modal-overlay.active { display: flex; opacity: 1;}
+        .modal-content { background: white; border-radius: 20px; padding: 30px; position: relative; width: 1100px; max-width: 95%; max-height: 90vh; overflow-y: auto; margin: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.2); transform: scale(0.95); transition: 0.2s; border-top: 6px solid var(--info);}
+        .modal-overlay.active .modal-content { transform: scale(1); }
+        .modal-content::-webkit-scrollbar { width: 8px; }
+        .modal-content::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        
+        /* Cập nhật thuộc tính nút tắt, nâng z-index chống kẹt */
+        .close-btn { position: absolute; top: 15px; right: 20px; font-size: 24px; cursor: pointer; color: #95a5a6; border: none; background: transparent; transition: 0.2s; font-weight: bold; z-index: 9999;}
+        .close-btn:hover { color: var(--danger); transform: scale(1.1); }
+        
+        .modal-header { text-align: center; margin-bottom: 25px; border-bottom: 2px dashed #ecf0f1; padding-bottom: 15px;}
+        .modal-header h2 { margin: 0; font-size: 22px; font-weight: 900; color: var(--text-main); display: flex; align-items: center; justify-content: center; gap: 10px;}
 
         /* KHUNG CHỨA BẢNG IN TRỰC NHẬT ẨN */
         #printDutyContainer { display: none; }
@@ -197,24 +223,23 @@
         <button class="tab-btn" onclick="switchTab('tab-thongke', this)">📊 Thống Kê Tổng Hợp</button>
     </div>
 
-    <!-- TAB 1: SƠ ĐỒ CHỖ NGỒI -->
     <div id="tab-sodo" class="tab-content active">
 
         <div class="class-info-panel">
             <div>
                 <label>Lớp</label>
-                <input type="text" id="info-lop" placeholder="VD: 11A7" onkeyup="saveClassInfo()">
+                <input type="text" id="info-lop" readonly title="Cài đặt thông tin ở màn hình Trang Chủ">
             </div>
             <div>
-                <label>Giáo viên chủ nhiệm</label>
-                <input type="text" id="info-gvcn" placeholder="Họ và tên GVCN" onkeyup="saveClassInfo()">
+                <label>GVCN</label>
+                <input type="text" id="info-gvcn" readonly title="Cài đặt thông tin ở màn hình Trang Chủ">
             </div>
             <div>
-                <label>Phòng học</label>
+                <label>Phòng học (Nhập tại đây)</label>
                 <input type="text" id="info-phong" placeholder="VD: P.302" onkeyup="saveClassInfo()">
             </div>
             <div>
-                <label>Sỉ số tự động</label>
+                <label>Sỉ số</label>
                 <input type="text" id="info-siso" readonly title="Tự động tính từ danh sách Excel">
             </div>
         </div>
@@ -222,7 +247,7 @@
         <div class="action-bar">
             <div>
                 <button class="btn btn-random" onclick="autoArrangeSeats()">🎲 Xếp Chỗ Ngẫu Nhiên</button>
-                <button class="btn btn-save" onclick="saveSeating()">💾 Lưu Sơ Đồ</button>
+                <button class="btn btn-save" onclick="saveSeating()">💾 Lưu</button>
             </div>
             <button class="btn btn-export" onclick="window.print()">🖨️ In Sơ Đồ Lớp</button>
         </div>
@@ -258,7 +283,6 @@
         </div>
     </div>
 
-    <!-- TAB 2: TRỰC NHẬT -->
     <div id="tab-trucnhat" class="tab-content">
         
         <div id="dutyWarningBox" class="warning-box">
@@ -270,28 +294,30 @@
             <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
                 <div style="display:flex; align-items:center; background:#fff; border:1px solid #cbd5e1; padding:8px 15px; border-radius:12px;">
                     <label style="font-size:13px; font-weight:800; color:#64748b; margin-right:10px; text-transform: uppercase;">Tuần Trực:</label>
-                    <input type="date" id="weekPicker" style="border:none; outline:none; background:transparent; font-weight:900; font-size: 14px; color:var(--dark-orange);" onchange="updateWeekDates()">
+                    <input type="date" id="weekPicker" style="border:none; outline:none; background:transparent; font-family: 'Inter', sans-serif; font-weight:900; font-size: 14px; color:var(--dark-orange);" onchange="updateWeekDates()">
                 </div>
-                <button class="btn btn-save" onclick="saveDuty()">💾 Lưu & Chốt Lịch</button>
-                <button class="btn btn-export" onclick="printDuty()">🖨️ In Lịch Trực Theo Tuần</button>
+                <button class="btn btn-save" onclick="saveDuty()">💾 Lưu</button>
+                <button class="btn btn-export" onclick="printDuty()">🖨️ In Lịch Tuần</button>
+                <button class="btn btn-review" onclick="openPastWeeksModal()">🕒 Đánh Giá & Xem Lại</button>
             </div>
             <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-                <button class="btn btn-danger" onclick="resetDutyList()">🔄 Phân Công Lại Từ Đầu</button>
-                <button class="btn btn-newweek" onclick="resetNewWeek()">🚀 Phân Công Tuần Mới</button>
+                <button class="btn btn-danger" onclick="resetDutyList()">🔄 Làm Mới Danh Sách</button>
+                <button class="btn btn-pack" onclick="packSchedule()">🪄 Dồn Lịch (Bù Bàn Trực)</button>
+                <button class="btn btn-newweek" onclick="resetNewWeek()">🚀 Phân Công Tuần Tới</button>
             </div>
         </div>
 
         <div>
-            <h3 style="margin-top:0; color: var(--dark-orange);">📅 Lịch Trực Tại Lớp</h3>
+            <h3 style="margin-top:0; color: var(--dark-orange);">📅 Phân Công Lịch Trực Hiện Tại</h3>
             <table class="schedule-table">
                 <thead>
                     <tr>
-                        <th style="width: 100px;">Thứ / Ngày</th>
-                        <th style="width: 120px;">Trực Tổ</th>
-                        <th style="width: 80px;">Bàn</th>
-                        <th style="width: 200px;">Học Sinh 1 & Đánh Giá</th>
-                        <th style="width: 200px;">Học Sinh 2 & Đánh Giá</th>
-                        <th style="width: 200px;">Nội Dung Nhiệm Vụ</th>
+                        <th style="width: 120px;">Thứ / Ngày</th>
+                        <th style="width: 140px;">Tổ Trực</th>
+                        <th style="width: 90px;">Bàn</th>
+                        <th style="width: 220px;">Học Sinh 1</th>
+                        <th style="width: 220px;">Học Sinh 2</th>
+                        <th style="width: 250px;">Công Việc Cần Thực Hiện</th>
                     </tr>
                 </thead>
                 <tbody id="scheduleBody"></tbody>
@@ -299,7 +325,6 @@
         </div>
     </div>
 
-    <!-- TAB 3: THỐNG KÊ -->
     <div id="tab-thongke" class="tab-content">
         <div class="action-bar">
             <div>
@@ -331,7 +356,40 @@
                 </tr>
             </thead>
             <tbody id="statsTableBody">
-                <tr><td colspan="6" style="color:#94a3b8; font-style:italic; padding: 40px;">Chưa có dữ liệu thống kê. Vui lòng "Lưu & Chốt Lịch Trực" ở Tab Trực Nhật.</td></tr>
+                <tr><td colspan="6" style="color:#94a3b8; font-style:italic; padding: 40px;">Chưa có dữ liệu thống kê. Vui lòng "Lưu Lịch Trực" ở Tab Trực Nhật.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div id="pastWeeksModal" class="modal-overlay">
+    <div class="modal-content" style="border-top-color: var(--info);">
+        <button class="close-btn" onclick="closeModal('pastWeeksModal')" title="Đóng cửa sổ này">✕</button>
+        <div class="modal-header">
+            <h2 style="color: var(--info-dark);">🕒 LỊCH SỬ PHÂN CÔNG & ĐÁNH GIÁ</h2>
+        </div>
+        
+        <div style="margin-bottom: 20px; display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+            <label style="font-weight: 800; color: var(--text-muted);">Chọn Tuần Đã Lưu:</label>
+            <select id="pastWeekSelector" onchange="loadPastWeek()" style="padding: 10px 15px; border-radius: 10px; border: 2px dashed var(--info); font-weight: 700; outline: none; font-family: inherit; font-size: 14px;">
+            </select>
+            <div style="margin-left: auto; display: flex; gap: 10px;">
+                <button class="btn btn-danger" onclick="deletePastWeek()">🗑️ Xóa Tuần Này</button>
+                <button class="btn btn-save" onclick="savePastWeekEvals()">💾 Chốt Đánh Giá</button>
+            </div>
+        </div>
+
+        <table class="schedule-table" style="font-size: 14px;">
+            <thead>
+                <tr>
+                    <th style="width: 120px;">Thứ/Ngày</th>
+                    <th style="width: 120px;">Khu Vực</th>
+                    <th style="width: 250px;">Học Sinh 1 & Đánh Giá</th>
+                    <th style="width: 250px;">Học Sinh 2 & Đánh Giá</th>
+                    <th>Nhiệm Vụ</th>
+                </tr>
+            </thead>
+            <tbody id="pastWeekBody">
             </tbody>
         </table>
     </div>
@@ -340,6 +398,12 @@
 <div id="printDutyContainer"></div>
 
 <script>
+    // Hàm đóng Modal an toàn ở phạm vi Toàn cục
+    function closeModal(id) { 
+        const el = document.getElementById(id);
+        if (el) el.classList.remove('active'); 
+    }
+
     // --- CHÌA KHÓA FIREBASE ---
     const firebaseConfig = {
         apiKey: "AIzaSyCbA_3aOK2tOHFpWpJBnOMgcDfTHNf5pro",
@@ -376,7 +440,7 @@
     function saveToCloud() {
         if(!currentUser) return;
         let dataToSave = {};
-        const allowedKeys = ['AppConfig_Master', 'DuLieu_Lop11_Master', 'Seating_Lop11', 'SeatingLayout_Lop11', 'DutySchedule_Lop11', 'DutyWeek_Lop11', 'DutyHistory_Lop11', 'DutyPairIndex_Lop11', 'SoDo_Config', 'AssignedTasks_Lop11'];
+        const allowedKeys = ['AppConfig_Master', 'DuLieu_Lop11_Master', 'Seating_Lop11', 'SeatingLayout_Lop11', 'DutySchedule_Lop11', 'DutyWeek_Lop11', 'DutyHistory_Lop11', 'DutyPairIndex_Lop11', 'DutyCurrentStartIndex_Lop11', 'SoDo_Config', 'AssignedTasks_Lop11'];
         
         for (let i = 0; i < localStorage.length; i++) {
             let key = localStorage.key(i);
@@ -467,23 +531,20 @@
 
     function loadClassInfo() {
         let appConfig = JSON.parse(localStorage.getItem('AppConfig_Master')) || { className: "", teacherName: "" };
-        let sodoConfig = JSON.parse(localStorage.getItem('SoDo_Config')) || { lop: appConfig.className, gvcn: appConfig.teacherName, phong: "" };
+        let sodoConfig = JSON.parse(localStorage.getItem('SoDo_Config')) || { phong: "" };
         
-        document.getElementById('info-lop').value = sodoConfig.lop;
-        document.getElementById('info-gvcn').value = sodoConfig.gvcn;
-        document.getElementById('info-phong').value = sodoConfig.phong;
+        document.getElementById('info-lop').value = appConfig.className || "";
+        document.getElementById('info-gvcn').value = appConfig.teacherName || "";
+        document.getElementById('info-phong').value = sodoConfig.phong || "";
         
         document.getElementById('info-siso').value = `${studentsData.length} HS (Nam: ${maleCount} - Nữ: ${femaleCount})`;
         updatePrintHeaders();
     }
 
     function saveClassInfo() {
-        let config = {
-            lop: document.getElementById('info-lop').value,
-            gvcn: document.getElementById('info-gvcn').value,
-            phong: document.getElementById('info-phong').value
-        };
-        localStorage.setItem('SoDo_Config', JSON.stringify(config));
+        let sodoConfig = JSON.parse(localStorage.getItem('SoDo_Config')) || {};
+        sodoConfig.phong = document.getElementById('info-phong').value;
+        localStorage.setItem('SoDo_Config', JSON.stringify(sodoConfig));
         updatePrintHeaders();
         saveToCloud();
     }
@@ -703,34 +764,174 @@
         return opts;
     }
 
-    function getEvalHtml(i, hsIndexStr) {
+    // --- CÁC HÀM XỬ LÝ ĐÁNH GIÁ (DÀNH CHO MODAL TUẦN CŨ) ---
+    // Mặc định hiển thị "Tốt" cho giao diện chấm điểm nhanh
+    function getEvalHtmlPast(i, hsIndexStr, currentEval, currentTxt) {
+        currentEval = (currentEval && currentEval !== 'Chưa đánh giá') ? currentEval : 'Tốt';
+        let displayTxt = currentEval === 'other' ? 'block' : 'none';
+        let selClass = currentEval === 'Tốt' ? 'good' : 'bad';
+
         return `
-            <select id="duty_eval_s${hsIndexStr}_${i}" class="eval-input good" onchange="toggleEvalInput(${i}, '${hsIndexStr}')">
-                <option value="Tốt" selected>Tốt</option>
-                <option value="Chưa đổ rác">Chưa đổ rác</option>
-                <option value="Chưa lau bảng">Chưa lau bảng</option>
-                <option value="Chưa quét lớp">Chưa quét lớp</option>
-                <option value="other">Khác ➡️</option>
+            <select id="pw_eval_s${hsIndexStr}_${i}" class="eval-input ${selClass}" onchange="toggleEvalInputPast(${i}, '${hsIndexStr}')" style="margin-top:5px; padding: 6px; font-size: 13px;">
+                <option value="Tốt" ${currentEval === 'Tốt' ? 'selected' : ''}>Tốt</option>
+                <option value="Chưa đổ rác" ${currentEval === 'Chưa đổ rác' ? 'selected' : ''}>Chưa đổ rác</option>
+                <option value="Chưa lau bảng" ${currentEval === 'Chưa lau bảng' ? 'selected' : ''}>Chưa lau bảng</option>
+                <option value="Chưa quét lớp" ${currentEval === 'Chưa quét lớp' ? 'selected' : ''}>Chưa quét lớp</option>
+                <option value="other" ${currentEval === 'other' ? 'selected' : ''}>Lỗi Khác ➡️</option>
             </select>
-            <input type="text" id="duty_eval_txt_s${hsIndexStr}_${i}" class="eval-input" style="display:none; margin-top:5px;" placeholder="Ghi chú thêm...">
+            <input type="text" id="pw_eval_txt_s${hsIndexStr}_${i}" class="eval-input" style="display:${displayTxt}; margin-top:5px;" placeholder="Ghi chú lỗi..." value="${currentTxt || ''}">
         `;
     }
 
-    function toggleEvalInput(i, hsIndexStr) {
-        const sel = document.getElementById(`duty_eval_s${hsIndexStr}_${i}`);
-        const txt = document.getElementById(`duty_eval_txt_s${hsIndexStr}_${i}`);
+    function toggleEvalInputPast(i, hsIndexStr) {
+        const sel = document.getElementById(`pw_eval_s${hsIndexStr}_${i}`);
+        const txt = document.getElementById(`pw_eval_txt_s${hsIndexStr}_${i}`);
+        sel.classList.remove('good', 'bad');
         if(sel.value === 'Tốt') {
-            sel.classList.add('good'); sel.classList.remove('bad');
+            sel.classList.add('good');
             txt.style.display = 'none';
         } else if(sel.value === 'other') {
-            sel.classList.remove('good', 'bad');
             txt.style.display = 'block';
         } else {
-            sel.classList.remove('good'); sel.classList.add('bad');
+            sel.classList.add('bad');
             txt.style.display = 'none';
         }
     }
 
+    function deletePastWeek() {
+        let weekDate = document.getElementById('pastWeekSelector').value;
+        if(!weekDate) return;
+        
+        if(!confirm("⚠️ CẢNH BÁO: Bạn có chắc chắn muốn XÓA BỎ HOÀN TOÀN tuần trực này khỏi lịch sử?\n\n(Lưu ý: Nếu bạn đã lỡ Đánh Giá xấu cho học sinh trong tuần này thì các lỗi vi phạm trong sổ vẫn sẽ bị giữ lại. Hành động này chỉ xóa khỏi bảng xem lại lịch sử tuần.)")) return;
+        
+        let history = JSON.parse(localStorage.getItem('DutyHistory_Lop11')) || {};
+        delete history[weekDate];
+        localStorage.setItem('DutyHistory_Lop11', JSON.stringify(history));
+        
+        saveToCloud();
+        
+        if (document.getElementById('tab-thongke').classList.contains('active')) renderStatistics();
+        checkDutyWarnings();
+        
+        alert("🗑️ Đã xóa tuần trực khỏi lịch sử!");
+        openPastWeeksModal(); 
+    }
+
+    function openPastWeeksModal() {
+        let history = JSON.parse(localStorage.getItem('DutyHistory_Lop11')) || {};
+        let weeks = Object.keys(history).sort((a, b) => new Date(b) - new Date(a));
+        let sel = document.getElementById('pastWeekSelector');
+        
+        if (weeks.length === 0) {
+            sel.innerHTML = '<option value="">Chưa có dữ liệu</option>';
+            document.getElementById('pastWeekBody').innerHTML = '<tr><td colspan="5" class="text-center" style="padding: 30px; font-style: italic; color: #94a3b8;">Hệ thống chưa lưu lại tuần trực nào. Hãy Chốt lịch trực ở màn hình ngoài trước.</td></tr>';
+        } else {
+            sel.innerHTML = weeks.map(w => {
+                let d = new Date(w);
+                let day = d.getDay() || 7; 
+                if(day !== 1) d.setDate(d.getDate() - (day - 1));
+                
+                let weekData = history[w];
+                let isPending = weekData[0] && weekData[0].isEvaluated !== true;
+                let statusTxt = isPending ? "🔴 Chưa chốt ĐG" : "🟢 Đã chốt ĐG";
+
+                return `<option value="${w}">Tuần từ: ${d.toLocaleDateString('vi-VN')} - [${statusTxt}]</option>`;
+            }).join('');
+            loadPastWeek(weeks[0]);
+        }
+        document.getElementById('pastWeeksModal').classList.add('active');
+    }
+
+    function loadPastWeek() {
+        let weekDate = document.getElementById('pastWeekSelector').value;
+        if(!weekDate) return;
+        let history = JSON.parse(localStorage.getItem('DutyHistory_Lop11')) || {};
+        let weekData = history[weekDate];
+        let tbody = document.getElementById('pastWeekBody');
+        let html = '';
+        
+        weekData.forEach((d, i) => {
+            let s1Name = d.hs1 !== "" && d.hs1 !== null && studentsData[d.hs1] ? studentsData[d.hs1]["Họ và Tên"] : "<i style='color:#94a3b8'>Trống</i>";
+            let s2Name = d.hs2 !== "" && d.hs2 !== null && studentsData[d.hs2] ? studentsData[d.hs2]["Họ và Tên"] : "<i style='color:#94a3b8'>Trống</i>";
+
+            let eval1HTML = d.hs1 !== "" ? getEvalHtmlPast(i, '1', d.eval1, d.evalTxt1) : "";
+            let eval2HTML = d.hs2 !== "" ? getEvalHtmlPast(i, '2', d.eval2, d.evalTxt2) : "";
+
+            let groupBadge = d.group === 'PHAT' ? '<span style="color:var(--danger); font-weight:bold;">🚨 Phạt Trực</span>' : (d.group === 'KHAC' ? '<span style="color:var(--purple); font-weight:bold;">🌟 Khác</span>' : `<b>${d.group}</b>`);
+
+            html += `
+            <tr style="border-bottom: 1px solid var(--border-color);">
+                <td style="font-weight:900; color:var(--dark-orange); font-size: 13px;">${d.date}</td>
+                <td>${groupBadge} <br> ${d.desk ? 'Bàn '+d.desk : ''}</td>
+                <td><div class="student-box">${s1Name}</div>${eval1HTML}</td>
+                <td><div class="student-box">${s2Name}</div>${eval2HTML}</td>
+                <td style="font-size:12.5px; color: var(--text-muted); font-weight:600;">${(d.cbxTasks||[]).join(', ')} ${d.otherTask ? '<br>+ '+d.otherTask : ''}</td>
+            </tr>`;
+        });
+        tbody.innerHTML = html;
+    }
+
+    function savePastWeekEvals() {
+        let weekDate = document.getElementById('pastWeekSelector').value;
+        if(!weekDate) return;
+        
+        let history = JSON.parse(localStorage.getItem('DutyHistory_Lop11')) || {};
+        let weekData = history[weekDate];
+        let master = JSON.parse(localStorage.getItem('DuLieu_Lop11_Master'));
+
+        weekData.forEach((d, i) => {
+            if (d.hs1 !== "") {
+                let e1 = document.getElementById(`pw_eval_s1_${i}`);
+                if(e1) {
+                    d.eval1 = e1.value;
+                    d.evalTxt1 = document.getElementById(`pw_eval_txt_s1_${i}`).value;
+                }
+                
+                if (d.group === "PHAT" && d.eval1 === "Tốt") {
+                    let s = master[d.hs1];
+                    if (s && s.logs && s.logs.xuly) {
+                        let pAct = s.logs.xuly.find(a => a.status === 'pending' && (a.title.toLowerCase().includes('lao động') || a.title.toLowerCase().includes('trực lớp')));
+                        if (pAct) {
+                            pAct.status = 'done';
+                            pAct.dateResolved = d.date;
+                            pAct.note = "Đã trực phạt TỐT và hoàn thành nhiệm vụ.";
+                        }
+                    }
+                    for (let w in history) {
+                        history[w].forEach(day => {
+                            if (day.hs1 == d.hs1 && day.eval1 !== 'Tốt') day.resolved1 = true;
+                            if (day.hs2 == d.hs1 && day.eval2 !== 'Tốt') day.resolved2 = true;
+                        });
+                    }
+                }
+            }
+            if (d.hs2 !== "") {
+                let e2 = document.getElementById(`pw_eval_s2_${i}`);
+                if(e2) {
+                    d.eval2 = e2.value;
+                    d.evalTxt2 = document.getElementById(`pw_eval_txt_s2_${i}`).value;
+                }
+            }
+        });
+
+        if(weekData.length > 0) weekData[0].isEvaluated = true; // Mark as evaluated
+
+        history[weekDate] = weekData;
+        localStorage.setItem('DutyHistory_Lop11', JSON.stringify(history));
+        localStorage.setItem('DuLieu_Lop11_Master', JSON.stringify(master));
+        
+        saveToCloud();
+        alert("💾 Đã lưu và Chốt Đánh Giá thành công!");
+        
+        checkDutyWarnings();
+        if (document.getElementById('tab-thongke').classList.contains('active')) renderStatistics();
+        
+        openPastWeeksModal();
+        document.getElementById('pastWeekSelector').value = weekDate;
+        loadPastWeek();
+    }
+
+    // --- BẢNG TẠO LỊCH TRỰC HIỆN TẠI ---
     function updateWeekDates() {
         const picker = document.getElementById('weekPicker');
         if(!picker.value) return;
@@ -761,7 +962,7 @@
                     <label><input type="checkbox" id="task_${i}_lau" value="Lau bảng" checked><span>Lau bảng</span></label>
                     <label><input type="checkbox" id="task_${i}_rac" value="Đổ rác" checked><span>Đổ rác</span></label>
                 </div>
-                <input type="text" id="task_other_${i}" class="task-other-input" placeholder="Khác (nhập thêm)...">
+                <input type="text" id="task_other_${i}" class="task-other-input" placeholder="Thêm công việc...">
             `;
 
             html += `
@@ -772,12 +973,12 @@
                             <option value="Tổ 1">Tổ 1</option><option value="Tổ 2">Tổ 2</option>
                             <option value="Tổ 3">Tổ 3</option><option value="Tổ 4">Tổ 4</option>
                             <option value="PHAT" style="color:var(--danger); font-weight:bold;">🚨 Phạt Trực</option>
-                            <option value="KHAC" style="color:var(--purple); font-weight:bold;">🌟 Tự chọn (Khác)</option>
+                            <option value="KHAC" style="color:var(--purple); font-weight:bold;">🌟 Tự chọn</option>
                         </select>
                     </td>
                     <td><select id="duty_desk_${i}" class="duty-sel-desk" onchange="onDutyDeskChange(${i})"></select></td>
-                    <td><div id="duty_s1_box_${i}" class="student-box">--</div>${getEvalHtml(i, '1')}</td>
-                    <td><div id="duty_s2_box_${i}" class="student-box">--</div>${getEvalHtml(i, '2')}</td>
+                    <td><div id="duty_s1_box_${i}" class="student-box">--</div></td>
+                    <td><div id="duty_s2_box_${i}" class="student-box">--</div></td>
                     <td>${taskHTML}</td>
                 </tr>
             `;
@@ -793,19 +994,18 @@
         let deskSel = document.getElementById(`duty_desk_${dayIdx}`);
         let s1Box = document.getElementById(`duty_s1_box_${dayIdx}`);
         let s2Box = document.getElementById(`duty_s2_box_${dayIdx}`);
-        let eval2Sel = document.getElementById(`duty_eval_s2_${dayIdx}`);
         
         if (groupSel.value === "PHAT") {
             groupSel.classList.add('phat'); groupSel.classList.remove('khac');
             deskSel.style.display = "none";
             s1Box.classList.add('phat-select'); s1Box.classList.remove('khac-select');
             s1Box.innerHTML = `<select id="duty_s1_val_${dayIdx}">${getPunishedStudentsOptions()}</select>`;
-            s2Box.style.display = "none"; eval2Sel.style.display = "none";
+            s2Box.style.display = "none";
             
         } else if (groupSel.value === "KHAC") {
             groupSel.classList.add('khac'); groupSel.classList.remove('phat');
             deskSel.style.display = "none";
-            s2Box.style.display = "block"; eval2Sel.style.display = "block";
+            s2Box.style.display = "flex";
             
             s1Box.classList.add('khac-select'); s1Box.classList.remove('phat-select');
             s1Box.innerHTML = `<select id="duty_s1_val_${dayIdx}">${getAllStudentsOptions()}</select>`;
@@ -815,7 +1015,7 @@
         } else {
             groupSel.classList.remove('phat', 'khac');
             deskSel.style.display = "block";
-            s2Box.style.display = "flex"; eval2Sel.style.display = "block";
+            s2Box.style.display = "flex";
             s1Box.classList.remove('phat-select', 'khac-select');
             s2Box.classList.remove('khac-select');
             
@@ -889,7 +1089,7 @@
     }
 
     function resetDutyList() {
-        if(!confirm("⚠️ CẢNH BÁO: Bạn có chắc chắn muốn xóa TOÀN BỘ phân công trực nhật hiện tại và bắt đầu lại từ đầu? Lịch sử trực nhật đã lưu vẫn sẽ được giữ lại.")) return;
+        if(!confirm("⚠️ CẢNH BÁO: Bạn có chắc chắn muốn xóa TOÀN BỘ phân công trực nhật của tuần hiện tại để bắt đầu xếp lại từ đầu? (Lịch sử trực nhật các tuần trước đó vẫn được giữ nguyên)")) return;
         
         localStorage.removeItem('DutySchedule_Lop11');
         localStorage.removeItem('DutyPairIndex_Lop11');
@@ -897,7 +1097,7 @@
         initDailyDutyTable();
         for(let i=0; i<5; i++) onDutyGroupChange(i);
         saveToCloud();
-        alert("🔄 Đã reset danh sách phân công trực nhật thành công!");
+        alert("🔄 Đã làm mới danh sách phân công trực nhật!");
     }
 
     function assignSequentialDuty() {
@@ -924,6 +1124,9 @@
             nextIndex = parseInt(localStorage.getItem('DutyPairIndex_Lop11')) || 0;
         }
 
+        // LƯU LẠI VỊ TRÍ ĐẦU TUẦN ĐỂ DÙNG CHO NÚT DỒN LỊCH BÙ
+        localStorage.setItem('DutyCurrentStartIndex_Lop11', nextIndex);
+
         for(let i=0; i<5; i++) {
             let current = masterPairs[nextIndex % masterPairs.length];
             document.getElementById(`duty_group_${i}`).value = current.group;
@@ -936,8 +1139,54 @@
         localStorage.setItem('DutyPairIndex_Lop11', nextIndex);
     }
 
+    // THUẬT TOÁN DỒN LỊCH THÔNG MINH
+    function packSchedule() {
+        let masterPairs = getSequentialPairs();
+        if(masterPairs.length === 0) { alert("Chưa có sơ đồ lớp!"); return; }
+
+        let startIndex = parseInt(localStorage.getItem('DutyCurrentStartIndex_Lop11'));
+        if(isNaN(startIndex)) {
+            for(let i=0; i<5; i++) {
+                let grp = document.getElementById(`duty_group_${i}`).value;
+                let desk = document.getElementById(`duty_desk_${i}`).value;
+                if(grp !== "PHAT" && grp !== "KHAC" && desk !== "") {
+                    let foundIdx = masterPairs.findIndex(p => p.group === grp && p.desk === desk);
+                    if(foundIdx !== -1) {
+                        let normalDaysBefore = 0;
+                        for(let j=0; j<i; j++) {
+                            let g = document.getElementById(`duty_group_${j}`).value;
+                            if(g !== "PHAT" && g !== "KHAC") normalDaysBefore++;
+                        }
+                        startIndex = (foundIdx - normalDaysBefore + masterPairs.length) % masterPairs.length;
+                        break;
+                    }
+                }
+            }
+            if(startIndex === -1 || isNaN(startIndex)) {
+                alert("Hệ thống không xác định được bàn trực khởi đầu. Vui lòng bấm nút 'Phân Công Tuần Tới' một lần để hệ thống nhận diện trước khi dồn lịch.");
+                return;
+            }
+        }
+
+        let nextIndex = startIndex;
+        for(let i=0; i<5; i++) {
+            let grp = document.getElementById(`duty_group_${i}`).value;
+            if(grp === "PHAT" || grp === "KHAC") continue;
+            
+            let current = masterPairs[nextIndex % masterPairs.length];
+            document.getElementById(`duty_group_${i}`).value = current.group;
+            onDutyGroupChange(i);
+            document.getElementById(`duty_desk_${i}`).value = current.desk;
+            onDutyDeskChange(i);
+            nextIndex++;
+        }
+        
+        localStorage.setItem('DutyPairIndex_Lop11', nextIndex);
+        alert("🪄 Đã dồn lịch thành công! Bàn trực bị mất lượt đã được tự động đẩy vào các ngày trống tiếp theo.");
+    }
+
     function resetNewWeek() {
-        if(!confirm("Bắt đầu phân công cho tuần mới? Hệ thống sẽ làm sạch đánh giá, lùi lịch tới 7 ngày tiếp theo và xoay vòng trực nhật nối tiếp tuần hiện tại.")) return;
+        if(!confirm("Bắt đầu phân công xoay vòng cho tuần mới? Hệ thống sẽ lùi lịch tới 7 ngày tiếp theo và tự động sắp xếp bàn trực nhật nối tiếp với tuần hiện tại.")) return;
 
         let picker = document.getElementById('weekPicker');
         if(picker.value) {
@@ -950,12 +1199,6 @@
         updateWeekDates();
 
         for(let i=0; i<5; i++) {
-            document.getElementById(`duty_eval_s1_${i}`).value = 'Tốt';
-            document.getElementById(`duty_eval_s2_${i}`).value = 'Tốt';
-            toggleEvalInput(i, '1'); toggleEvalInput(i, '2');
-            document.getElementById(`duty_eval_txt_s1_${i}`).value = '';
-            document.getElementById(`duty_eval_txt_s2_${i}`).value = '';
-
             document.getElementById(`task_${i}_quet`).checked = true;
             document.getElementById(`task_${i}_lau`).checked = true;
             document.getElementById(`task_${i}_rac`).checked = true;
@@ -969,7 +1212,8 @@
         const weekDate = document.getElementById('weekPicker').value;
         if(!weekDate) { alert("Vui lòng chọn Tuần Trực trước khi lưu!"); return; }
 
-        let master = JSON.parse(localStorage.getItem('DuLieu_Lop11_Master'));
+        let existingHistory = JSON.parse(localStorage.getItem('DutyHistory_Lop11')) || {};
+        let existingWeek = existingHistory[weekDate] || [];
 
         const dutyData = [];
         for(let i=0; i<5; i++) {
@@ -995,40 +1239,55 @@
                 if(cb && cb.checked) cbxTasks.push(cb.value);
             });
 
-            let eval1 = document.getElementById(`duty_eval_s1_${i}`).value;
-            let eval2 = document.getElementById(`duty_eval_s2_${i}`).value;
+            // Tự động Ghi nhận "Tốt" khi lưu tuần
+            let eval1 = (existingWeek[i] && existingWeek[i].hs1 === hs1) ? existingWeek[i].eval1 : "Chưa đánh giá";
+            let evalTxt1 = (existingWeek[i] && existingWeek[i].hs1 === hs1) ? existingWeek[i].evalTxt1 : "";
+            let eval2 = (existingWeek[i] && existingWeek[i].hs2 === hs2) ? existingWeek[i].eval2 : "Chưa đánh giá";
+            let evalTxt2 = (existingWeek[i] && existingWeek[i].hs2 === hs2) ? existingWeek[i].evalTxt2 : "";
 
+            // Tự động gỡ phạt trực nếu lưu tuần trực mà GV set là Tốt, đồng thời tắt cảnh báo
             if (group === "PHAT" && hs1 !== "" && eval1 === "Tốt") {
+                let master = JSON.parse(localStorage.getItem('DuLieu_Lop11_Master'));
                 let s = master[hs1];
                 if (s && s.logs && s.logs.xuly) {
                     let pAct = s.logs.xuly.find(a => a.status === 'pending' && (a.title.toLowerCase().includes('lao động') || a.title.toLowerCase().includes('trực lớp')));
                     if (pAct) {
                         pAct.status = 'done';
                         pAct.dateResolved = document.getElementById(`day_label_${i}`).dataset.date;
-                        pAct.note = "Đã trực phạt TỐT và hoàn thành nhiệm vụ xuất sắc.";
+                        pAct.note = "Đã trực phạt TỐT và hoàn thành nhiệm vụ.";
                     }
+                    localStorage.setItem('DuLieu_Lop11_Master', JSON.stringify(master));
+                }
+                
+                // Tự động tắt các cảnh báo kém trước đó
+                for (let w in existingHistory) {
+                    existingHistory[w].forEach(day => {
+                        if (day.hs1 == hs1 && day.eval1 !== 'Tốt') day.resolved1 = true;
+                        if (day.hs2 == hs1 && day.eval2 !== 'Tốt') day.resolved2 = true;
+                    });
                 }
             }
 
             dutyData.push({
                 group: group, desk: desk, hs1: hs1, hs2: hs2,
                 cbxTasks: cbxTasks, otherTask: document.getElementById(`task_other_${i}`).value,
-                eval1: eval1, evalTxt1: document.getElementById(`duty_eval_txt_s1_${i}`).value,
-                eval2: eval2, evalTxt2: document.getElementById(`duty_eval_txt_s2_${i}`).value,
+                eval1: eval1, evalTxt1: evalTxt1,
+                eval2: eval2, evalTxt2: evalTxt2,
                 date: document.getElementById(`day_label_${i}`).dataset.date
             });
         }
         
-        localStorage.setItem('DuLieu_Lop11_Master', JSON.stringify(master)); 
+        // Cờ nhận diện để hiện nhãn đỏ/xanh ở dropdown lịch sử
+        dutyData[0].isEvaluated = existingWeek[0] ? existingWeek[0].isEvaluated : false;
+
         localStorage.setItem('DutySchedule_Lop11', JSON.stringify(dutyData));
         localStorage.setItem('DutyWeek_Lop11', weekDate);
 
-        let history = JSON.parse(localStorage.getItem('DutyHistory_Lop11')) || {};
-        history[weekDate] = dutyData;
-        localStorage.setItem('DutyHistory_Lop11', JSON.stringify(history));
+        existingHistory[weekDate] = dutyData;
+        localStorage.setItem('DutyHistory_Lop11', JSON.stringify(existingHistory));
 
         saveToCloud();
-        alert("💾 Đã lưu vào Bảng Trực và Ghi nhận Lịch sử Thống kê thành công!");
+        alert("💾 Đã chốt Lịch trực tuần!");
         checkDutyWarnings();
         if (document.getElementById('tab-thongke').classList.contains('active')) renderStatistics();
     }
@@ -1063,12 +1322,6 @@
                     });
                 }
                 document.getElementById(`task_other_${i}`).value = data.otherTask || "";
-                
-                let evalSel1 = document.getElementById(`duty_eval_s1_${i}`);
-                if(evalSel1) { evalSel1.value = data.eval1 || "Tốt"; toggleEvalInput(i, '1'); document.getElementById(`duty_eval_txt_s1_${i}`).value = data.evalTxt1 || ""; }
-                
-                let evalSel2 = document.getElementById(`duty_eval_s2_${i}`);
-                if(evalSel2) { evalSel2.value = data.eval2 || "Tốt"; toggleEvalInput(i, '2'); document.getElementById(`duty_eval_txt_s2_${i}`).value = data.evalTxt2 || ""; }
             });
         } else {
             for(let i=0; i<5; i++) onDutyGroupChange(i);
@@ -1096,7 +1349,7 @@
                         <th style="width: 15%;">Tổ / Bàn</th>
                         <th style="width: 25%;">Học sinh 1</th>
                         <th style="width: 25%;">Học sinh 2</th>
-                        <th style="width: 20%;">Nhiệm vụ</th>
+                        <th style="width: 20%;">Các Công Việc Cần Làm</th>
                     </tr>
                 </thead>
                 <tbody>`;
@@ -1159,8 +1412,10 @@
         for (let week in history) {
             history[week].forEach(day => {
                 let s1 = parseInt(day.hs1); let s2 = parseInt(day.hs2);
-                let isBad1 = day.eval1 !== 'Tốt' && day.eval1 !== ''; 
-                let isBad2 = day.eval2 !== 'Tốt' && day.eval2 !== ''; 
+                
+                // Chỉ đếm nếu chưa được đánh dấu đã xử lý (resolved)
+                let isBad1 = day.eval1 !== 'Tốt' && day.eval1 !== 'Chưa đánh giá' && day.eval1 !== '' && !day.resolved1; 
+                let isBad2 = day.eval2 !== 'Tốt' && day.eval2 !== 'Chưa đánh giá' && day.eval2 !== '' && !day.resolved2; 
                 
                 if (!isNaN(s1) && isBad1 && studentsData[s1]) badCounts[s1] = (badCounts[s1] || 0) + 1;
                 if (!isNaN(s2) && isBad2 && studentsData[s2]) badCounts[s2] = (badCounts[s2] || 0) + 1;
@@ -1170,7 +1425,7 @@
         let warningHTML = "";
         for (let idx in badCounts) {
             if (badCounts[idx] >= 2 && studentsData[idx]) {
-                warningHTML += `<span class="w-tag">⚠️ ${studentsData[idx]["Họ và Tên"]} (${badCounts[idx]} lần kém)</span>`;
+                warningHTML += `<span class="w-tag">⚠️ ${studentsData[idx]["Họ và Tên"]} (${badCounts[idx]} lần kém) <button onclick="clearStudentWarning(${idx})" class="btn-dismiss-warning" title="Đã xử lý (Tắt cảnh báo)">✕</button></span>`;
             }
         }
 
@@ -1182,6 +1437,21 @@
         }
     }
 
+    function clearStudentWarning(studentIdx) {
+        if(!confirm(`Thầy/Cô có muốn tắt cảnh báo trực bù cho học sinh này không?\n(Hệ thống sẽ ghi nhận là thầy/cô đã xử lý nhắc nhở xong)`)) return;
+        
+        let history = JSON.parse(localStorage.getItem('DutyHistory_Lop11')) || {};
+        for (let w in history) {
+            history[w].forEach(day => {
+                if (day.hs1 == studentIdx && day.eval1 !== 'Tốt') day.resolved1 = true;
+                if (day.hs2 == studentIdx && day.eval2 !== 'Tốt') day.resolved2 = true;
+            });
+        }
+        localStorage.setItem('DutyHistory_Lop11', JSON.stringify(history));
+        saveToCloud();
+        checkDutyWarnings();
+    }
+
     function renderStatistics() {
         const history = JSON.parse(localStorage.getItem('DutyHistory_Lop11')) || {};
         let stats = {};
@@ -1191,8 +1461,11 @@
         for (let week in history) {
             history[week].forEach(day => {
                 let s1 = parseInt(day.hs1); let s2 = parseInt(day.hs2);
-                let isGood1 = day.eval1 === 'Tốt'; let isBad1 = day.eval1 !== 'Tốt' && day.eval1 !== ''; 
-                let isGood2 = day.eval2 === 'Tốt'; let isBad2 = day.eval2 !== 'Tốt' && day.eval2 !== ''; 
+                let isGood1 = day.eval1 === 'Tốt'; 
+                let isBad1 = day.eval1 !== 'Tốt' && day.eval1 !== 'Chưa đánh giá' && day.eval1 !== ''; 
+                
+                let isGood2 = day.eval2 === 'Tốt'; 
+                let isBad2 = day.eval2 !== 'Tốt' && day.eval2 !== 'Chưa đánh giá' && day.eval2 !== ''; 
                 
                 let evalText1 = day.eval1 === 'other' ? day.evalTxt1 : day.eval1;
                 let evalText2 = day.eval2 === 'other' ? day.evalTxt2 : day.eval2;
@@ -1216,7 +1489,7 @@
 
         document.getElementById('topGoodList').innerHTML = topGood.length > 0 ? 
             topGood.map(s => `<div class="s-list-item"><span>🌟 ${s.name}</span> <span class="score">${s.good} lần Tốt</span></div>`).join('') :
-            '<div style="color:#94a3b8; font-style:italic;">Chưa có dữ liệu.</div>';
+            '<div style="color:#94a3b8; font-style:italic;">Chưa có dữ liệu đánh giá tốt.</div>';
             
         document.getElementById('topBadList').innerHTML = topBad.length > 0 ? 
             topBad.map(s => `<div class="s-list-item"><span>⚠️ ${s.name}</span> <span class="score">${s.bad} lần Vi phạm</span></div>`).join('') :
@@ -1224,7 +1497,7 @@
 
         let tbody = document.getElementById('statsTableBody');
         if (Object.keys(history).length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" style="color:#94a3b8; font-style:italic; padding: 30px;">Chưa có dữ liệu thống kê. Vui lòng "Lưu & Chốt Lịch Trực" ở Tab Trực Nhật.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" style="color:#94a3b8; font-style:italic; padding: 30px;">Chưa có dữ liệu thống kê. Vui lòng xếp lịch và Lưu Chốt để ghi nhận.</td></tr>';
             return;
         }
 

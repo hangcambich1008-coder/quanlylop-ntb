@@ -159,8 +159,8 @@
 <div class="container">
     <div class="filter-section">
         <h2>
-            🎯 Tiêu Chí Phân Công
-            <button class="btn btn-review" onclick="openTaskManager()">⚙️ Quản Lý HĐ Đã Giao</button>
+            🎯 TIÊU CHÍ PHÂN CÔNG
+            <button class="btn btn-review" onclick="openTaskManager()">⚙️ Xem Lại Các HĐ Đã Giao</button>
         </h2>
         
         <div class="mode-selection">
@@ -192,7 +192,7 @@
                 <input type="number" id="txtQuantity" placeholder="VD: 10" min="1">
             </div>
             <div class="form-group">
-                <label>Tên Nhiệm Vụ Đang Giao</label>
+                <label>Tên Hoạt Động Đang Phân Công</label>
                 <input type="text" id="txtTaskName" placeholder="VD: Dọn vệ sinh lớp..." onkeyup="checkTaskWarning()">
             </div>
             <div class="form-group">
@@ -228,8 +228,8 @@
         <div class="selected-count">Đã chọn: <span id="countDisplay">0</span> học sinh</div>
         <div class="action-buttons">
             <button class="btn btn-export" onclick="exportSelected()">📊 Xuất File Excel</button>
-            <button class="btn btn-print" onclick="printSelected()">🖨️ In Danh Sách (Bản Đẹp)</button>
-            <button class="btn btn-sync" onclick="syncToRecords()">✅ Chốt Phân Công & Lưu H.Sơ</button>
+            <button class="btn btn-print" onclick="printSelected()">🖨️ In Danh Sách Phân Công </button>
+            <button class="btn btn-sync" onclick="syncToRecords()">✅ Chốt Phân Công & Lưu</button>
         </div>
     </div>
 </div>
@@ -238,14 +238,14 @@
     <div class="modal-content" style="width: 850px;">
         <button class="close-btn" onclick="closeModal('taskManagerModal')">✕</button>
         <div class="modal-header">
-            <h2>⚙️ LỊCH SỬ CÁC NHIỆM VỤ ĐÃ GIAO</h2>
+            <h2>⚙️ LỊCH SỬ CÁC CÔNG VIỆC ĐÃ GIAO</h2>
         </div>
         <div style="max-height: 450px; overflow-y: auto; margin-top: 10px;">
             <table class="schedule-table" style="width: 100%; border-collapse: collapse;">
                 <thead>
                     <tr>
                         <th style="width: 15%; padding: 10px; border-bottom: 2px solid var(--border-color);">Ngày</th>
-                        <th style="width: 40%; text-align: left; padding: 10px; border-bottom: 2px solid var(--border-color);">Tên Nhiệm Vụ</th>
+                        <th style="width: 40%; text-align: left; padding: 10px; border-bottom: 2px solid var(--border-color);">Tên Công Việc</th>
                         <th style="width: 10%; padding: 10px; border-bottom: 2px solid var(--border-color);">Sĩ Số</th>
                         <th style="width: 35%; padding: 10px; border-bottom: 2px solid var(--border-color);">Thao Tác</th>
                     </tr>
@@ -264,20 +264,20 @@
         </div>
         
         <div style="margin-bottom: 15px;">
-            <label style="font-weight:700; color: var(--text-muted); font-size:14px; display:block; margin-bottom:5px;">Nhiệm vụ đang điểm danh:</label>
+            <label style="font-weight:700; color: var(--text-muted); font-size:14px; display:block; margin-bottom:5px;">Tên Hoạt Động:</label>
             <div id="currentAttendanceTaskName" style="padding: 12px; background: #f8fafc; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 15px; font-weight:bold; color:var(--info-dark);"></div>
             <input type="hidden" id="currentAttendanceTaskId">
         </div>
         
         <div style="font-size: 13px; color: var(--danger); font-style:italic; margin-bottom: 10px;">
-            * Bỏ tích những học sinh <b>không tham gia</b>. Hệ thống sẽ gỡ bỏ điểm phong trào và chuyển thành 1 lỗi vi phạm cho học sinh đó.
+            * Bỏ tích những học sinh <b>không tham gia</b>. Hệ thống sẽ gỡ bỏ điểm phong trào và chuyển thành 1 lỗi vi phạm cho học sinh đó. Mỗi vi phạm bị trừ 1đ vào phần phong trào.
         </div>
 
         <div id="pastTaskStudents"></div>
 
         <div style="display: flex; gap: 10px; margin-top: 20px;">
             <button class="btn" style="background: var(--text-muted); color: white; width: 30%;" onclick="backToTaskManagerFromReview()">⬅ Quay Lại</button>
-            <button class="btn btn-sync" style="width: 70%; background: var(--info-dark);" onclick="saveAttendance()">💾 Lưu Điểm Danh</button>
+            <button class="btn btn-sync" style="width: 70%; background: var(--info-dark);" onclick="saveAttendance()">💾 Lưu</button>
         </div>
     </div>
 </div>
@@ -290,7 +290,7 @@
         </div>
         
         <div style="margin-bottom: 15px;">
-            <label style="font-weight:700; color: var(--text-muted); font-size:14px; display:block; margin-bottom:5px;">Nhiệm vụ:</label>
+            <label style="font-weight:700; color: var(--text-muted); font-size:14px; display:block; margin-bottom:5px;">Tên Hoạt Động:</label>
             <div id="editListName" style="padding: 12px; background: #f8fafc; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 15px; font-weight:bold; color:var(--success);"></div>
             <input type="hidden" id="editListTaskId">
         </div>
@@ -609,7 +609,7 @@
                     }
                     
                     if (s.isFallback) {
-                        talentHTML = "<span style='color:#b45309; font-weight:700; font-size:12px; background:#fde68a; padding:4px 8px; border-radius:10px;'>⚠️ Phân công bù</span>";
+                        talentHTML = "<span style='color:#b45309; font-weight:700; font-size:12px; background:#fde68a; padding:4px 8px; border-radius:10px;'>⚠️ Bổ sung </span>";
                     } else {
                         talentHTML = matchedTalents.length > 0 ? matchedTalents.map(t => `<span class="talent-tag">${t}</span>`).join(' ') : "<span style='color:var(--text-muted); font-size:12px;'>Không yêu cầu</span>";
                     }
@@ -921,7 +921,7 @@
         saveToCloud(); // LƯU LÊN MÂY
         renderTaskManager();
         filterStudents();
-        alert("✏️ Đã cập nhật tên nhiệm vụ thành công!");
+        alert("✏️ Đã cập nhật tên hoạt động thành công!");
     }
 
     // TÍNH NĂNG ĐIỂM DANH LẠI
