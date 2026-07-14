@@ -6,7 +6,12 @@
     <title>Xử Lý Kỷ Luật - GVCN Cam Bích Hằng</title>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     
-    <!-- Bộ font Inter: Hiện đại, thanh lịch và tối ưu cho tiếng Việt -->
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    
+    <!-- Bộ font Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     
     <style>
@@ -18,7 +23,6 @@
             --bg-body: #f8fafc; --card-bg: #ffffff;
         }
 
-        /* Ép đồng bộ Font chữ cho toàn bộ thành phần */
         body, input, select, button, textarea { 
             font-family: 'Inter', system-ui, -apple-system, sans-serif; 
             color: var(--text-main); 
@@ -34,8 +38,12 @@
         
         .header { background: linear-gradient(135deg, var(--primary-orange), var(--dark-orange)); color: white; padding: 25px 20px; text-align: center; box-shadow: 0 10px 30px rgba(234, 88, 12, 0.2); border-bottom-left-radius: 30px; border-bottom-right-radius: 30px; margin-bottom: 40px; position: relative;}
         .header h1 { margin: 0 0 5px 0; font-weight: 900; font-size: 1.9em; text-transform: uppercase; letter-spacing: 0.5px;}
+        
         .btn-back { position: absolute; left: 30px; top: 25px; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 10px 18px; border-radius: 12px; text-decoration: none; font-weight: 700; transition: all 0.3s; display: flex; align-items: center; gap: 8px;}
         .btn-back:hover { background: white; color: var(--dark-orange); box-shadow: 0 4px 15px rgba(0,0,0,0.1);}
+
+        .btn-logout { position: absolute; right: 30px; top: 25px; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 10px 18px; border-radius: 12px; text-decoration: none; font-weight: 800; transition: all 0.3s; display: flex; align-items: center; gap: 8px; cursor: pointer;}
+        .btn-logout:hover { background: #ef4444; color: white; border-color: #ef4444; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);}
 
         .container { max-width: 1250px; margin: 0 auto 50px auto; background: rgba(255, 255, 255, 0.98); padding: 35px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.05); border: 1px solid var(--border-color); }
         
@@ -85,10 +93,8 @@
         .modal-overlay.active { display: flex; opacity: 1;}
         .modal-content { background: var(--card-bg); border-radius: 20px; padding: 35px; position: relative; width: 950px; max-width: 95%; max-height: 90vh; overflow-y: auto; margin: auto; box-shadow: 0 20px 40px rgba(0,0,0,0.2); transform: scale(0.95); transition: 0.3s; border-top: 6px solid var(--info-dark);}
         .modal-overlay.active .modal-content { transform: scale(1); }
-        .modal-content::-webkit-scrollbar { width: 8px; }
-        .modal-content::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 
-        .close-btn { position: absolute; top: 25px; right: 25px; width: 36px; height: 36px; border-radius: 50%; font-size: 18px; cursor: pointer; color: var(--text-muted); border: none; background: #f1f5f9; transition: 0.2s; font-weight: bold; z-index: 10; display:flex; align-items:center; justify-content:center;}
+        .close-btn { position: absolute; top: 25px; right: 25px; width: 36px; height: 36px; border-radius: 50%; font-size: 18px; cursor: pointer; color: var(--text-muted); border: none; background: #f1f5f9; transition: 0.2s; font-weight: bold; display:flex; align-items:center; justify-content:center;}
         .close-btn:hover { background: var(--danger-light); color: var(--danger); transform: rotate(90deg); }
         .modal-header h2 { margin: 0 0 25px 0; color: var(--info-dark); text-align: center; border-bottom: 1px solid var(--border-color); padding-bottom: 20px; font-weight: 900; text-transform: uppercase;}
 
@@ -114,7 +120,7 @@
         .btn-undo-action:hover { background: #e2e8f0; }
 
         .btn-delete-action { background: white; color: var(--danger); border: 1px solid #fecaca; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 700; transition: 0.2s; width: 100%;}
-        .btn-delete-action:hover { background: var(--danger-light); border-color: var(--danger); }
+        .btn-delete-action:hover { background: #fef2f2; border-color: var(--danger); }
         
         .status-text { font-weight: 900; display: inline-flex; align-items: center; gap: 5px; font-size: 13px; text-transform: uppercase;}
         .status-text.pending { color: var(--danger); }
@@ -135,6 +141,7 @@
 <div class="header">
     <a href="index.html" class="btn-back">⬅ Quay Lại Trang Chủ</a>
     <h1>QUẢN LÝ QUY TRÌNH KỶ LUẬT</h1>
+    <button class="btn-logout" onclick="logout()" title="Đăng xuất khỏi hệ thống">Đăng xuất</button>
 </div>
 
 <div class="container">
@@ -224,6 +231,21 @@
 </div>
 
 <script>
+    // --- CHÌA KHÓA FIREBASE ---
+    const firebaseConfig = {
+        apiKey: "AIzaSyCbA_3aOK2tOHFpWpJBnOMgcDfTHNf5pro",
+        authDomain: "quanlylop-ntb.firebaseapp.com",
+        projectId: "quanlylop-ntb",
+        storageBucket: "quanlylop-ntb.firebasestorage.app",
+        messagingSenderId: "332000248751",
+        appId: "1:332000248751:web:ebb85e784b5bde121e255a",
+        measurementId: "G-7DZQL7ELDQ"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    let currentUser = null;
+
     let studentsData = [];
     let currentFilter = 'all';
     let currentStudentIndex = -1;
@@ -232,7 +254,49 @@
     const KW_HOCTAP = ['thuộc bài', 'làm bài', 'học bài', 'chuẩn bị bài', 'bài tập', 'tài liệu', 'dụng cụ'];
     const KW_THI = ['hk1', 'hk2', 'ghk1', 'ghk2', 'kiểm tra'];
 
-    window.onload = function() {
+    // --- XÁC THỰC & ĐỒNG BỘ ĐÁM MÂY ---
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            currentUser = user;
+            syncFromCloud();
+        } else {
+            window.location.href = 'login.html';
+        }
+    });
+
+    function logout() {
+        auth.signOut();
+    }
+
+    function saveToCloud() {
+        if(!currentUser) return;
+        let dataToSave = {};
+        const allowedKeys = ['AppConfig_Master', 'DuLieu_Lop11_Master', 'Seating_Lop11', 'SeatingLayout_Lop11', 'DutySchedule_Lop11', 'DutyWeek_Lop11', 'DutyHistory_Lop11', 'DutyPairIndex_Lop11', 'SoDo_Config', 'AssignedTasks_Lop11'];
+        for (let i = 0; i < localStorage.length; i++) {
+            let key = localStorage.key(i);
+            if (allowedKeys.includes(key) || key.startsWith('doc_') || key.startsWith('excel_doc_')) {
+                dataToSave[key] = localStorage.getItem(key);
+            }
+        }
+        dataToSave.lastUpdated = firebase.firestore.FieldValue.serverTimestamp();
+        db.collection("quanlylop_data").doc(currentUser.uid).set(dataToSave, { merge: true }).catch(err => console.error(err));
+    }
+
+    function syncFromCloud() {
+        db.collection("quanlylop_data").doc(currentUser.uid).get().then(doc => {
+            if (doc.exists) {
+                const data = doc.data();
+                for (let key in data) {
+                    if (key !== 'lastUpdated') {
+                        localStorage.setItem(key, data[key]);
+                    }
+                }
+            }
+            initPageData();
+        });
+    }
+
+    function initPageData() {
         const rawData = localStorage.getItem('DuLieu_Lop11_Master');
         if (rawData) {
             studentsData = JSON.parse(rawData);
@@ -306,6 +370,7 @@
         });
 
         localStorage.setItem('DuLieu_Lop11_Master', JSON.stringify(studentsData));
+        // Không gọi saveToCloud ở đây để tránh gọi thừa lúc load trang. Sẽ gọi ở các hàm chủ động.
     }
 
     // --- HIỂN THỊ GIAO DIỆN ---
@@ -375,7 +440,7 @@
         });
 
         if (html === '') {
-            tbody.innerHTML = `<tr><td colspan="5" class="empty-state" style="padding: 40px; color:var(--text-muted); font-style:italic; text-align:center;">Danh sách lọc trống. Vui lòng chọn [Tất cả] hoặc dùng thanh công cụ phía trên để thêm hồ sơ xử lý mới.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="5" style="padding: 40px; color:var(--text-muted); font-style:italic; text-align:center;">Danh sách lọc trống. Vui lòng chọn [Tất cả] hoặc dùng thanh công cụ phía trên để thêm hồ sơ xử lý mới.</td></tr>`;
         } else {
             tbody.innerHTML = html;
         }
@@ -406,7 +471,6 @@
         container.innerHTML = s.logs.xuly.map(act => {
             const classSeverity = act.severity === 'severe' && act.status === 'pending' ? 'action-item pending severe' : (act.status === 'pending' ? 'action-item pending' : 'action-item done');
             
-            // Xử lý thông minh lỗi "Invalid Date"
             let formattedDate = act.dateResolved;
             if (formattedDate && formattedDate.includes('-')) {
                 const parts = formattedDate.split('-');
@@ -423,7 +487,7 @@
                             <div class="action-form">
                                 <label>Ngày xong:</label>
                                 <input type="date" id="date_${act.id}" value="${today}">
-                                <input type="text" id="note_${act.id}" placeholder="Kết quả thực hiện (VD: PH cam kết, Đã nộp bản KĐ...)">
+                                <input type="text" id="note_${act.id}" placeholder="Kết quả thực hiện (VD: PH cam kết...)">
                             </div>
                         </div>
                         <div style="display:flex; flex-direction:column; gap:8px; min-width: 120px;">
@@ -457,7 +521,6 @@
     function resolveAction(id) {
         const dateVal = document.getElementById(`date_${id}`).value;
         const noteVal = document.getElementById(`note_${id}`).value;
-        
         if (!dateVal) { alert("Vui lòng chọn ngày xử lý!"); return; }
 
         const s = studentsData[currentStudentIndex];
@@ -466,7 +529,6 @@
         s.logs.xuly[actIndex].status = 'done';
         s.logs.xuly[actIndex].dateResolved = dateVal;
         s.logs.xuly[actIndex].note = noteVal;
-
         saveAndRefresh();
     }
 
@@ -481,11 +543,9 @@
     }
 
     function deleteAction(id) {
-        if (!confirm("⚠️ BẠN CÓ CHẮC CHẮN MUỐN XÓA VĨNH VIỄN HỒ SƠ NÀY?\n\nHành động này không thể hoàn tác, hãy chắc chắn rằng bạn đang chọn đúng nhé!")) return;
-        
+        if (!confirm("⚠️ BẠN CÓ CHẮC CHẮN MUỐN XÓA VĨNH VIỄN HỒ SƠ NÀY?\n\nHành động này không thể hoàn tác!")) return;
         const s = studentsData[currentStudentIndex];
         const actIndex = s.logs.xuly.findIndex(a => a.id === id);
-        
         if (actIndex > -1) {
             s.logs.xuly.splice(actIndex, 1);
             saveAndRefresh();
@@ -505,9 +565,7 @@
     function addManualAction() {
         const selVal = document.getElementById('selManualActionType').value;
         let txt = document.getElementById('txtManualAction').value.trim();
-        
-        let title = "";
-        let reason = "";
+        let title = "", reason = "";
 
         if (selVal === 'other') {
             if (!txt) { alert("Vui lòng nhập đầy đủ hình thức xử lý và nguyên nhân!"); return; }
@@ -541,22 +599,20 @@
         renderActionList();
         renderTable();
         updateStats();
+        saveToCloud(); // <-- Đồng bộ lên mây
     }
 
     // --- XUẤT BÁO CÁO ---
     function exportActions() {
         let exportData = [];
-
         studentsData.forEach(s => {
             if (!s.logs.xuly || s.logs.xuly.length === 0) return;
-            
             s.logs.xuly.forEach(act => {
                 let formattedDate = act.dateResolved;
                 if (formattedDate && formattedDate.includes('-')) {
                     const parts = formattedDate.split('-');
                     if(parts.length === 3) formattedDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
                 }
-
                 exportData.push({
                     "Họ và Tên": s["Họ và Tên"],
                     "Hình Thức Xử Lý": act.title,
@@ -572,10 +628,8 @@
 
         const ws = XLSX.utils.json_to_sheet(exportData);
         ws['!cols'] = [{wch: 25}, {wch: 30}, {wch: 40}, {wch: 18}, {wch: 18}, {wch: 40}];
-        
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "TienTrinhKyLuat");
-        
         const nowStr = new Date().toLocaleDateString('vi-VN').replace(/\//g, "-");
         XLSX.writeFile(wb, `Theo_Doi_Ky_Luat_Lop_${nowStr}.xlsx`);
     }
