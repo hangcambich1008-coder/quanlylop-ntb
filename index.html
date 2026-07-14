@@ -5,149 +5,138 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hệ Thống Quản Lý Lớp</title>
     
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     
     <style>
         :root { 
-            /* Modern Color Palette */
-            --primary-orange: #f97316; --dark-orange: #ea580c;
-            --primary-blue: #3b82f6; --dark-blue: #2563eb;
-            --success: #10b981; --success-light: #d1fae5;
-            --danger: #ef4444; --danger-light: #fee2e2;
-            --info: #0ea5e9; --info-light: #e0f2fe;
-            --warning: #f59e0b; --warning-light: #fef3c7;
-            --purple: #8b5cf6; --purple-light: #ede9fe;
-            --teal: #14b8a6; --teal-light: #ccfbf1;
-            --bg-body: #f8fafc; --text-main: #1e293b; --text-muted: #64748b;
-            --card-bg: #ffffff; --border-color: #e2e8f0;
+            --primary-orange: #FF7E00; --dark-orange: #E65100;
+            --danger: #e74c3c; --success: #27ae60; --info: #3498DB; --warning: #f39c12; --purple: #8e44ad;
+            --bg-body: #f4f6f9; --text-main: #2c3e50;
         }
 
-        body { font-family: 'Nunito', sans-serif; background-color: var(--bg-body); margin: 0; color: var(--text-main); line-height: 1.5; }
+        body { font-family: 'Nunito', sans-serif; background-color: var(--bg-body); margin: 0; color: var(--text-main); }
 
         /* HEADER */
-        .header { background: linear-gradient(135deg, var(--primary-orange), var(--dark-orange)); color: white; padding: 25px 20px; text-align: center; box-shadow: 0 4px 20px rgba(234, 88, 12, 0.2); margin-bottom: 35px; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px;}
-        .header h1 { margin: 0; font-weight: 900; font-size: 2.2em; text-transform: uppercase; letter-spacing: 1.5px; text-shadow: 0 2px 4px rgba(0,0,0,0.1);}
-        .header p { margin: 8px 0 0 0; font-size: 1.1em; font-weight: 600; color: rgba(255,255,255,0.9); display: flex; justify-content: center; align-items: center; gap: 10px;}
+        .header { background: var(--primary-orange); color: white; padding: 25px 20px; text-align: center; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); margin-bottom: 30px; border-bottom: 4px solid var(--dark-orange); }
+        .header h1 { margin: 0; font-weight: 900; font-size: 2em; text-transform: uppercase; letter-spacing: 1px;}
+        .header p { margin: 5px 0 0 0; font-size: 1.1em; font-weight: 700; color: #FFF0E3; display: flex; justify-content: center; align-items: center; gap: 10px;}
         
-        .btn-setting { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: white; border-radius: 50%; width: 36px; height: 36px; cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; justify-content: center; font-size: 18px; margin-left: 5px; backdrop-filter: blur(4px);}
-        .btn-setting:hover { background: white; color: var(--dark-orange); transform: rotate(90deg); box-shadow: 0 4px 10px rgba(0,0,0,0.1);}
+        .btn-setting { background: rgba(255,255,255,0.2); border: none; color: white; border-radius: 50%; width: 32px; height: 32px; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; font-size: 16px; margin-left: 5px;}
+        .btn-setting:hover { background: white; color: var(--dark-orange); transform: rotate(90deg); }
+        
+        .btn-logout { background: transparent; border: 1px solid #FFE0C2; color: #FFF0E3; border-radius: 8px; padding: 0 10px; height: 32px; cursor: pointer; transition: 0.2s; font-weight: bold; margin-left: 10px; font-size: 13px;}
+        .btn-logout:hover { background: var(--danger); color: white; border-color: var(--danger);}
 
-        .container { max-width: 1250px; margin: 0 auto 50px auto; padding: 0 20px; }
+        .container { max-width: 1200px; margin: 0 auto 50px auto; padding: 0 20px; }
 
         /* MENU LƯỚI CHỨC NĂNG */
-        .menu-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 20px; margin-bottom: 40px;}
-        .menu-card { background: var(--card-bg); border-radius: 16px; padding: 20px 15px; text-align: center; text-decoration: none; color: var(--text-main); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03); transition: all 0.3s ease; border: 1px solid var(--border-color); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; cursor: pointer; position: relative; overflow: hidden;}
-        .menu-card::before { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 4px; transition: 0.3s;}
-        .menu-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px -5px rgba(0,0,0,0.1); border-color: transparent;}
+        .menu-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 30px;}
+        .menu-card { background: white; border-radius: 12px; padding: 20px 15px; text-align: center; text-decoration: none; color: var(--text-main); box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: 0.2s; border-top: 4px solid #ccc; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; cursor: pointer; }
+        .menu-card:hover { transform: translateY(-3px); box-shadow: 0 8px 15px rgba(0,0,0,0.1); }
+        .menu-icon { font-size: 35px; line-height: 1; }
+        .menu-title { font-size: 15px; font-weight: 800; margin: 0; text-transform: uppercase;}
         
-        .menu-icon { width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; transition: 0.3s;}
-        .menu-title { font-size: 15px; font-weight: 800; margin: 0; text-transform: uppercase; color: var(--text-main);}
-        
-        .c-1::before { background: var(--info); } .c-1 .menu-icon { background: var(--info-light); color: var(--info); } .c-1:hover .menu-title { color: var(--info); }
-        .c-2::before { background: var(--success); } .c-2 .menu-icon { background: var(--success-light); color: var(--success); } .c-2:hover .menu-title { color: var(--success); }
-        .c-3::before { background: var(--danger); } .c-3 .menu-icon { background: var(--danger-light); color: var(--danger); } .c-3:hover .menu-title { color: var(--danger); }
-        .c-5::before { background: var(--warning); } .c-5 .menu-icon { background: var(--warning-light); color: var(--warning); } .c-5:hover .menu-title { color: var(--warning); }
-        .c-4::before { background: var(--purple); } .c-4 .menu-icon { background: var(--purple-light); color: var(--purple); } .c-4:hover .menu-title { color: var(--purple); }
-        .c-6::before { background: var(--teal); } .c-6 .menu-icon { background: var(--teal-light); color: var(--teal); } .c-6:hover .menu-title { color: var(--teal); }
+        .c-1 { border-top-color: var(--info); } .c-1:hover .menu-title { color: var(--info); }
+        .c-2 { border-top-color: var(--success); } .c-2:hover .menu-title { color: var(--success); }
+        .c-3 { border-top-color: var(--danger); } .c-3:hover .menu-title { color: var(--danger); }
+        .c-4 { border-top-color: var(--purple); } .c-4:hover .menu-title { color: var(--purple); }
+        .c-5 { border-top-color: #e67e22; } .c-5:hover .menu-title { color: #e67e22; }
 
         /* KHU VỰC DANH SÁCH HỌC SINH & NẠP DỮ LIỆU */
-        .list-section { background: var(--card-bg); border-radius: 16px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid var(--border-color);}
-        .list-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; padding: 25px 30px; background: #ffffff; border-bottom: 1px solid var(--border-color); }
-        .list-header h2 { margin: 0; font-size: 1.4em; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 10px;}
+        .list-section { background: white; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid #e2e8f0;}
+        .list-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; padding: 20px 25px; background: #f8f9fa; border-bottom: 1px solid #e2e8f0; }
+        .list-header h2 { margin: 0; font-size: 1.3em; font-weight: 800; color: #2c3e50;}
 
-        .upload-mini { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; justify-content: flex-end; }
+        .upload-mini { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; justify-content: flex-end; }
         .file-upload-wrapper { position: relative; display: inline-block; }
-        .btn-upload { background: var(--bg-body); color: var(--text-main); padding: 10px 18px; border-radius: 8px; font-weight: 700; font-size: 13px; border: 1px solid var(--border-color); cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; }
-        .btn-upload:hover { background: var(--text-main); color: white; border-color: var(--text-main);}
-        .btn-upload.btn-primary { background: var(--primary-blue); color: white; border-color: var(--primary-blue); }
-        .btn-upload.btn-primary:hover { background: var(--dark-blue); }
-        .btn-upload.btn-danger { background: white; color: var(--danger); border-color: var(--danger); }
-        .btn-upload.btn-danger:hover { background: var(--danger); color: white; }
-        
+        .btn-upload { background: var(--text-main); color: white; padding: 8px 15px; border-radius: 6px; font-weight: 700; font-size: 13px; border: none; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 5px; }
+        .btn-upload:hover { background: var(--primary-orange); }
         .file-upload-wrapper input[type=file] { position: absolute; left: 0; top: 0; opacity: 0; cursor: pointer; height: 100%; width: 100%; }
-        #status { font-weight: 700; font-size: 13px; margin: 0; padding: 8px 15px; border-radius: 8px; border: 1px solid transparent;}
-        .status-success { color: var(--success); background: var(--success-light); border-color: #a7f3d0;}
-        .status-error { color: var(--danger); background: var(--danger-light); border-color: #fecaca;}
-        .status-neutral { color: var(--text-muted); background: var(--bg-body); border-color: var(--border-color);}
+        #status { font-weight: 700; font-size: 13px; margin: 0; padding: 5px 10px; border-radius: 5px;}
+        .status-success { color: var(--success); background: #eafaf1;}
+        .status-error { color: var(--danger); background: #fdf2f1;}
 
         /* Bảng Danh Sách */
-        .table-container { overflow-x: auto; padding: 0 10px 10px 10px; }
-        table { width: 100%; border-collapse: separate; border-spacing: 0; }
-        th { background: #f8fafc; color: var(--text-muted); padding: 16px 15px; font-weight: 800; font-size: 13px; text-transform: uppercase; text-align: center; white-space: nowrap; border-bottom: 2px solid var(--border-color);}
-        td { padding: 14px 15px; border-bottom: 1px solid var(--border-color); text-align: center; font-size: 14.5px; vertical-align: middle; color: var(--text-main); transition: 0.2s;}
-        tr:last-child td { border-bottom: none; }
-        tr:hover td { background-color: #f1f5f9; }
-        td.text-left { text-align: left; font-weight: 700; color: var(--primary-blue);}
+        .table-container { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #2c3e50; color: white; padding: 12px 10px; font-weight: 700; font-size: 13px; text-transform: uppercase; text-align: center; white-space: nowrap;}
+        td { padding: 12px 10px; border-bottom: 1px solid #f1f5f9; text-align: center; font-size: 14.5px; vertical-align: middle; color: #334155;}
+        tr:hover td { background-color: #f8fafc; }
+        td.text-left { text-align: left; font-weight: 700; color: #1e293b;}
 
         /* Nút thao tác trong bảng */
-        .action-btns { display: flex; gap: 8px; justify-content: center; flex-wrap: nowrap;}
-        .btn-action { padding: 8px 12px; border-radius: 8px; border: 1px solid transparent; font-weight: 700; font-size: 12px; cursor: pointer; transition: all 0.2s; font-family: inherit; white-space: nowrap; display: flex; align-items: center; gap: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);}
-        .btn-action:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); filter: brightness(0.95); }
-        .btn-view { background: var(--info-light); color: var(--info); border-color: #bae6fd;}
-        .btn-edit { background: var(--warning-light); color: var(--dark-orange); border-color: #fde68a;}
-        .btn-print { background: var(--purple-light); color: var(--purple); border-color: #ddd6fe;}
-        .btn-kqrl { background: var(--success-light); color: #047857; border-color: #a7f3d0;}
+        .action-btns { display: flex; gap: 6px; justify-content: center; flex-wrap: nowrap;}
+        .btn-action { padding: 6px 12px; border-radius: 6px; border: none; font-weight: 700; font-size: 12px; cursor: pointer; color: white; transition: 0.2s; font-family: inherit; white-space: nowrap;}
+        .btn-action:hover { transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.15); filter: brightness(1.1); }
+        .btn-view { background: #3498DB; }
+        .btn-edit { background: #f39c12; }
+        .btn-print { background: #8e44ad; }
+        .btn-kqrl { background: #27ae60; }
 
         /* ========================================= */
         /* MODALS (CỬA SỔ BẬT LÊN) */
         /* ========================================= */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 1000; justify-content: center; align-items: center; opacity: 0; transition: 0.3s ease;}
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; opacity: 0; transition: 0.2s;}
         .modal-overlay.active { display: flex; opacity: 1;}
-        .modal-content { background: var(--card-bg); border-radius: 16px; padding: 35px; position: relative; width: 900px; max-width: 95%; max-height: 90vh; overflow-y: auto; margin: auto; box-shadow: 0 20px 40px rgba(0,0,0,0.2); transform: scale(0.95) translateY(10px); transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); border-top: 6px solid var(--primary-blue);}
-        .modal-overlay.active .modal-content { transform: scale(1) translateY(0); }
+        .modal-content { background: white; border-radius: 8px; padding: 30px; position: relative; width: 900px; max-width: 95%; max-height: 90vh; overflow-y: auto; margin: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.2); transform: scale(0.95); transition: 0.2s; border-top: 6px solid var(--warning);}
+        .modal-overlay.active .modal-content { transform: scale(1); }
         .modal-content::-webkit-scrollbar { width: 8px; }
-        .modal-content::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        .modal-content::-webkit-scrollbar-track { background: transparent; }
+        .modal-content::-webkit-scrollbar-thumb { background: #bdc3c7; border-radius: 4px; }
 
-        .close-btn { position: absolute; top: 20px; right: 20px; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-muted); border: none; background: var(--bg-body); transition: 0.2s; font-weight: bold; font-size: 16px;}
-        .close-btn:hover { background: var(--danger-light); color: var(--danger); transform: rotate(90deg);}
+        .close-btn { position: absolute; top: 15px; right: 20px; font-size: 24px; cursor: pointer; color: #95a5a6; border: none; background: transparent; transition: 0.2s; font-weight: bold;}
+        .close-btn:hover { color: var(--danger); }
 
-        .modal-header { text-align: center; margin-bottom: 30px; border-bottom: 1px solid var(--border-color); padding-bottom: 20px;}
-        .modal-header h2 { margin: 0; font-size: 24px; font-weight: 900; color: var(--text-main); display: flex; align-items: center; justify-content: center; gap: 10px;}
+        .modal-header { text-align: center; margin-bottom: 25px; border-bottom: 2px dashed #ecf0f1; padding-bottom: 15px;}
+        .modal-header h2 { margin: 0; font-size: 22px; font-weight: 800; color: var(--text-main); display: flex; align-items: center; justify-content: center; gap: 10px;}
 
         /* Bảng Thống kê mini KQRL */
-        .score-mini-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 25px; }
-        .mini-stat { background: white; border: 1px solid var(--border-color); padding: 20px 15px; border-radius: 12px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02);}
-        .mini-stat label { display: block; font-size: 12px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px;}
-        .mini-stat span { font-size: 28px; font-weight: 900; color: var(--text-main); line-height: 1;}
-        .ms-red span { color: var(--danger); } .ms-blue span { color: var(--primary-blue); } .ms-orange { background: linear-gradient(135deg, #fff7ed, #ffedd5); border-color: #fdba74; } .ms-orange span { color: var(--dark-orange); } .ms-neutral span { color: var(--text-main); }
+        .score-mini-bar { display: flex; justify-content: space-between; gap: 15px; margin-bottom: 20px; }
+        .mini-stat { flex: 1; background: #f8f9fa; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; text-align: center;}
+        .mini-stat label { display: block; font-size: 12px; font-weight: 800; color: #7f8c8d; text-transform: uppercase; margin-bottom: 5px;}
+        .mini-stat span { font-size: 24px; font-weight: 900; color: var(--text-main); }
+        .ms-red span { color: var(--danger); } .ms-blue span { color: var(--info); } .ms-orange span { color: var(--warning); } .ms-neutral span { color: #2c3e50; }
 
         .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;}
-        .info-item { border: 1px solid var(--border-color); padding: 20px; border-radius: 12px; background: white;}
-        .info-item label { display: flex; align-items: center; gap: 8px; font-weight: 800; margin-bottom: 15px; font-size: 14px; text-transform: uppercase; padding-bottom: 10px; border-bottom: 2px solid #f1f5f9;}
+        .info-item { border: 1px solid transparent; border-left-width: 5px; padding: 20px; border-radius: 8px; }
+        .info-item label { display: block; font-weight: 800; margin-bottom: 15px; font-size: 14px; text-transform: uppercase; border-bottom: 1px dashed rgba(0,0,0,0.1); padding-bottom: 8px;}
         .info-item.full-width { grid-column: span 2; }
-        .info-item.good { border-color: #6ee7b7; background: var(--success-light); } .info-item.good label { color: #047857; border-bottom-color: #a7f3d0;}
-        .info-item.bad { border-color: #fca5a5; background: var(--danger-light); } .info-item.bad label { color: #b91c1c; border-bottom-color: #fecaca;}
+        .info-item.good { border-color: var(--success); background: #eafaf1; } .info-item.good label { color: #27ae60; }
+        .info-item.bad { border-color: var(--danger); background: #fdf2f1; } .info-item.bad label { color: #c0392b; }
 
-        .list-ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 12px;}
-        .list-ul li { display: flex; justify-content: space-between; align-items: flex-start; font-size: 14.5px; color: var(--text-main); line-height: 1.5; padding: 12px; background: rgba(255,255,255,0.6); border-radius: 8px;}
-        .list-ul li b { color: var(--text-main); display: block; font-weight: 700;}
-        .list-ul li small { font-size: 12px; color: var(--text-muted); font-weight: 600; white-space: nowrap; margin-left: 10px;}
+        .list-ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 10px;}
+        .list-ul li { display: flex; justify-content: space-between; align-items: flex-start; font-size: 14px; color: #333; line-height: 1.4; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 8px;}
+        .list-ul li:last-child { border-bottom: none; padding-bottom: 0; margin-bottom: 0;}
+        .list-ul li b { color: var(--text-main); display: block;}
+        .list-ul li small { font-size: 12px; color: #7f8c8d; }
 
         /* Profile Wrap */
         .profile-wrap { display: flex; gap: 30px; align-items: flex-start;}
-        .profile-left { width: 240px; text-align: center; background: #f8fafc; padding: 30px 20px; border-radius: 16px; border: 1px solid var(--border-color);}
-        .avatar-box { width: 110px; height: 110px; background: white; border-radius: 50%; margin: 0 auto 20px auto; display: flex; justify-content: center; align-items: center; font-size: 55px; border: 4px solid var(--info-light); box-shadow: 0 4px 15px rgba(0,0,0,0.05);}
+        .profile-left { width: 220px; text-align: center; background: #f8f9fa; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0;}
+        .avatar-box { width: 100px; height: 100px; background: white; border-radius: 50%; margin: 0 auto 15px auto; display: flex; justify-content: center; align-items: center; font-size: 50px; border: 3px solid var(--info); box-shadow: 0 4px 10px rgba(0,0,0,0.05);}
         .profile-right { flex: 1; }
-        .info-group-title { font-size: 14px; font-weight: 800; color: var(--primary-blue); text-transform: uppercase; border-bottom: 2px solid var(--border-color); padding-bottom: 8px; margin-bottom: 20px; margin-top: 0; display: flex; align-items: center; gap: 8px;}
-        .info-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 30px;}
-        .info-row { font-size: 14.5px; background: var(--bg-body); padding: 10px 15px; border-radius: 8px;}
-        .info-row span { color: var(--text-muted); display: inline-block; width: 110px; font-weight: 700;}
-        .info-row b { color: var(--text-main); font-weight: 700;}
+        .info-group-title { font-size: 14px; font-weight: 800; color: var(--info); text-transform: uppercase; border-bottom: 2px solid #eee; padding-bottom: 5px; margin-bottom: 15px; margin-top: 0;}
+        .info-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px;}
+        .info-row { font-size: 14px; }
+        .info-row span { color: #7f8c8d; display: inline-block; width: 100px; font-weight: bold;}
+        .info-row b { color: #2c3e50; }
         .full-row { grid-column: span 2; }
         
         /* Edit Profile Modal & Config Modal */
-        .edit-section-title { font-size: 15px; font-weight: 800; color: var(--primary-blue); text-transform: uppercase; border-bottom: 2px solid var(--border-color); padding-bottom: 8px; margin-top: 30px; margin-bottom: 20px; }
+        .edit-section-title { font-size: 15px; font-weight: 800; color: var(--info); text-transform: uppercase; border-bottom: 2px solid #eee; padding-bottom: 8px; margin-top: 25px; margin-bottom: 15px; }
         .edit-section-title:first-child { margin-top: 0; }
-        .edit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;}
-        .edit-group { display: flex; flex-direction: column; gap: 8px; }
-        .edit-group label { font-size: 13px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;}
-        .edit-group input, .edit-group select { padding: 12px 15px; border: 1px solid var(--border-color); border-radius: 8px; font-family: inherit; font-size: 15px; outline: none; transition: 0.3s; background: var(--bg-body); color: var(--text-main);}
-        .edit-group input:focus, .edit-group select:focus { border-color: var(--primary-blue); box-shadow: 0 0 0 4px var(--info-light); background: white;}
+        .edit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;}
+        .edit-group { display: flex; flex-direction: column; gap: 5px; }
+        .edit-group label { font-size: 13px; font-weight: 800; color: #555; }
+        .edit-group input, .edit-group select { padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-family: inherit; font-size: 14px; outline: none; transition: 0.2s;}
+        .edit-group input:focus { border-color: var(--primary-orange); box-shadow: 0 0 0 3px rgba(255,126,0,0.1);}
         .edit-full { grid-column: span 2; }
-        .btn-save { background: var(--primary-blue); color: white; border: none; padding: 16px 25px; border-radius: 12px; font-weight: 800; font-size: 16px; cursor: pointer; width: 100%; transition: 0.3s; display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 20px;}
-        .btn-save:hover { background: var(--dark-blue); transform: translateY(-2px); box-shadow: 0 10px 20px rgba(37, 99, 235, 0.2);}
+        .btn-save { background: var(--success); color: white; border: none; padding: 14px 25px; border-radius: 8px; font-weight: 800; font-size: 15px; cursor: pointer; width: 100%; transition: 0.2s;}
+        .btn-save:hover { background: #219a52; transform: translateY(-2px);}
 
         /* Print Container */
         #printContainer { display: none; }
@@ -155,8 +144,8 @@
         @media print {
             .header, .container, .modal-overlay { display: none !important; }
             @page { margin: 1.5cm; }
-            body, html { height: auto; background: white; margin: 0; padding: 0; color: #000; font-family: 'Times New Roman', serif; }
-            #printContainer { display: block !important; width: 100%; line-height: 1.5;}
+            body, html { height: auto; background: white; margin: 0; padding: 0; color: #000; }
+            #printContainer { display: block !important; font-family: 'Times New Roman', serif; width: 100%; line-height: 1.5;}
             .print-header { text-align: center; margin-bottom: 25px; }
             .print-header h1 { margin: 0; font-size: 22px; text-transform: uppercase; font-weight: bold;}
             .print-header h2 { margin: 5px 0 0 0; font-size: 16px; font-weight: normal; }
@@ -168,8 +157,8 @@
             .p-row b { font-weight: normal; flex: 1; }
             .print-table { width: 100%; border-collapse: collapse; margin-top: 10px; page-break-inside: auto;}
             .print-table tr { page-break-inside: avoid; page-break-after: auto; }
-            .print-table th, .print-table td { border: 1px solid #000; padding: 8px; font-size: 14px; text-align: left; color: #000 !important; background: transparent !important;}
-            .print-table th { font-weight: bold; text-align: center;}
+            .print-table th, .print-table td { border: 1px solid #000; padding: 8px; font-size: 14px; text-align: left; }
+            .print-table th { background: #f0f0f0 !important; -webkit-print-color-adjust: exact; color-adjust: exact; text-align: center;}
             .text-center { text-align: center !important;}
             .print-signature { margin-top: 40px; page-break-inside: avoid; display: flex; justify-content: flex-end;}
             .sign-box { width: 280px; text-align: center; }
@@ -185,52 +174,49 @@
             Giáo viên: <b id="txt-teacher-name">Cam Bích Hằng</b> &nbsp;|&nbsp; 
             Năm học: <b id="txt-school-year">2025-2026</b>
             <button class="btn-setting" onclick="openConfigModal()" title="Cài đặt thông tin lớp">⚙️</button>
+            <button class="btn-logout" onclick="logout()" title="Đăng xuất khỏi hệ thống">Đăng xuất</button>
         </p>
     </div>
 
     <div class="container">
         <div class="menu-grid">
             <a href="sodolop.html" class="menu-card c-1">
-                <div class="menu-icon">🗺️</div>
+                <div class="menu-icon" style="color: var(--info);">🗺️</div>
                 <h3 class="menu-title">Sơ Đồ Lớp</h3>
             </a>
             <a href="phancongcongviec.html" class="menu-card c-2">
-                <div class="menu-icon">🎯</div>
+                <div class="menu-icon" style="color: var(--success);">🎯</div>
                 <h3 class="menu-title">Giao Nhiệm Vụ</h3>
             </a>
             <a href="xulyvipham.html" class="menu-card c-3">
-                <div class="menu-icon">⚖️</div>
+                <div class="menu-icon" style="color: var(--danger);">⚖️</div>
                 <h3 class="menu-title">Kỷ Luật</h3>
             </a>
             <a href="hsss.html" class="menu-card c-5">
-                <div class="menu-icon">📁</div>
+                <div class="menu-icon" style="color: #e67e22;">📁</div>
                 <h3 class="menu-title">Hồ Sơ Sổ Sách</h3>
             </a>
             <div class="menu-card c-4" onclick="openKqrlModal()">
-                <div class="menu-icon">📈</div>
+                <div class="menu-icon" style="color: var(--purple);">📈</div>
                 <h3 class="menu-title">Tổng Quan Lớp</h3>
             </div>
-            <a href="kqrl.html" class="menu-card c-6">
-                <div class="menu-icon">📑</div>
-                <h3 class="menu-title">Bảng Điểm KQRL</h3>
-            </a>
         </div>
 
         <div class="list-section">
             <div class="list-header">
-                <h2>📋 Danh Sách Lớp Chủ Nhiệm</h2>
+                <h2>📋 DANH SÁCH LỚP CHỦ NHIỆM</h2>
                 
                 <div class="upload-mini">
-                    <span id="status" class="status-neutral">Chưa tải dữ liệu</span>
+                    <span id="status" class="status-neutral">Đang kết nối...</span>
                     
-                    <button class="btn-upload" onclick="downloadSampleExcel()">📥 Tải File Mẫu</button>
+                    <button class="btn-upload" style="background: #34495e;" onclick="downloadSampleExcel()">📥 Tải File Mẫu</button>
                     
                     <div class="file-upload-wrapper">
-                        <button class="btn-upload btn-primary">⚙️ Nạp từ Excel</button>
+                        <button class="btn-upload">⚙️ Cập nhật từ Excel</button>
                         <input type="file" id="excelFile" accept=".xlsx, .xls">
                     </div>
                     
-                    <button class="btn-upload btn-danger" onclick="clearClassData()">🗑️ Xóa Dữ Liệu</button>
+                    <button class="btn-upload" style="background: var(--danger);" onclick="clearClassData()">🗑️ Xóa Dữ Liệu</button>
                 </div>
             </div>
 
@@ -246,7 +232,7 @@
                         </tr>
                     </thead>
                     <tbody id="studentTableBody">
-                        <tr><td colspan="5" style="padding: 50px; font-style:italic; color:var(--text-muted);">Chưa có dữ liệu. Vui lòng bấm "Nạp từ Excel" ở góc phải để thêm danh sách lớp.</td></tr>
+                        <tr><td colspan="5" style="padding: 40px; font-style:italic; color:#7f8c8d;">Đang tải dữ liệu...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -257,7 +243,7 @@
         <div class="modal-content" style="width: 500px; border-top-color: var(--primary-orange);">
             <button class="close-btn" onclick="closeModal('configModal')">✕</button>
             <div class="modal-header">
-                <h2 style="color: var(--dark-orange);">⚙️ CÀI ĐẶT THÔNG TIN</h2>
+                <h2 style="color: var(--dark-orange);">⚙️ CÀI ĐẶT THÔNG TIN CHUNG</h2>
             </div>
             <div class="edit-grid" style="grid-template-columns: 1fr;">
                 <div class="edit-group">
@@ -278,39 +264,39 @@
     </div>
 
     <div id="viewProfileModal" class="modal-overlay">
-        <div class="modal-content" style="border-top-color: var(--info); width: 950px;">
+        <div class="modal-content" style="border-top-color: var(--info); width: 850px;">
             <button class="close-btn" onclick="closeModal('viewProfileModal')">✕</button>
-            <div class="modal-header" style="margin-bottom: 25px;">
+            <div class="modal-header" style="margin-bottom: 20px;">
                 <h2 style="color: var(--info);">HỒ SƠ CÁ NHÂN HỌC SINH</h2>
             </div>
             
             <div class="profile-wrap">
                 <div class="profile-left">
                     <div class="avatar-box" id="vp-avatar">🧑‍🎓</div>
-                    <h3 id="vp-name" style="margin:0 0 8px 0; color:var(--text-main); font-size: 20px;">Tên HS</h3>
-                    <div style="color:var(--success); font-weight:800; font-size:13px; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 0.5px;">Đang theo học</div>
-                    <span id="vp-stt" style="background:var(--bg-body); border: 1px solid var(--border-color); padding:6px 16px; border-radius:20px; font-size:14px; font-weight:800; color:var(--text-muted);">STT: 0</span>
+                    <h3 id="vp-name" style="margin:0 0 5px 0; color:#2c3e50;">Tên HS</h3>
+                    <div style="color:var(--success); font-weight:bold; font-size:14px; margin-bottom: 5px;">Đang theo học</div>
+                    <span id="vp-stt" style="background:#eee; padding:4px 12px; border-radius:12px; font-size:12px; font-weight:bold; color:#555;">STT: 0</span>
                 </div>
                 <div class="profile-right">
-                    <h3 class="info-group-title">🏷️ 1. Thông tin cơ bản</h3>
+                    <h3 class="info-group-title">1. Thông tin cơ bản</h3>
                     <div class="info-grid-2">
                         <div class="info-row"><span>Ngày sinh:</span><b id="vp-dob">--</b></div>
                         <div class="info-row"><span>Giới tính:</span><b id="vp-gender">--</b></div>
                         <div class="info-row"><span>Dân tộc:</span><b id="vp-ethnic">--</b></div>
                         <div class="info-row"><span>Tôn giáo:</span><b id="vp-religion">--</b></div>
-                        <div class="info-row"><span>Điện thoại:</span><b id="vp-phone">--</b></div>
-                        <div class="info-row"><span>Diện CS/ĐB:</span><b id="vp-policy">--</b></div>
+                        <div class="info-row"><span>Điện thoại HS:</span><b id="vp-phone">--</b></div>
+                        <div class="info-row"><span>Diện CS/HCĐB:</span><b id="vp-policy">--</b></div>
                         <div class="info-row full-row"><span>Địa chỉ:</span><b id="vp-address">--</b></div>
                     </div>
 
-                    <h3 class="info-group-title">👨‍👩‍👧‍👦 2. Thông tin gia đình</h3>
+                    <h3 class="info-group-title">2. Thông tin gia đình</h3>
                     <div class="info-grid-2">
                         <div class="info-row full-row" id="vp-parent-info" style="line-height: 1.8;"></div>
                     </div>
                     
-                    <h3 class="info-group-title" style="color: var(--purple);">✨ 3. Năng khiếu & Học tập</h3>
+                    <h3 class="info-group-title" style="color: var(--purple);">3. Năng khiếu & Học tập</h3>
                     <div class="info-grid-2">
-                        <div class="info-row full-row"><span>Sở trường:</span><b id="vp-talent">--</b></div>
+                        <div class="info-row full-row"><span>Sở trường/NK:</span><b id="vp-talent">--</b></div>
                         <div class="info-row"><span>Môn thích:</span><b id="vp-fav-subject">--</b></div>
                         <div class="info-row"><span>Môn sợ:</span><b id="vp-hate-subject">--</b></div>
                     </div>
@@ -320,10 +306,10 @@
     </div>
 
     <div id="editProfileModal" class="modal-overlay">
-        <div class="modal-content" style="width: 900px; border-top-color: var(--warning);">
+        <div class="modal-content" style="width: 850px; border-top-color: var(--warning);">
             <button class="close-btn" onclick="closeModal('editProfileModal')">✕</button>
             <div class="modal-header">
-                <h2 style="color: var(--warning);">✏️ CẬP NHẬT LÝ LỊCH</h2>
+                <h2 style="color: var(--warning);">✏️ CẬP NHẬT LÝ LỊCH HỌC SINH</h2>
             </div>
             
             <div class="edit-section-title">1. Thông tin cơ bản</div>
@@ -358,66 +344,62 @@
                 <div class="edit-group"><label>Môn học sợ nhất</label><input type="text" id="ep-hate-subject"></div>
             </div>
 
-            <button class="btn-save" style="background: var(--warning); color: white;" onclick="saveProfile()">💾 LƯU LÝ LỊCH</button>
+            <button class="btn-save" onclick="saveProfile()">💾 LƯU THÔNG TIN</button>
         </div>
     </div>
 
     <div id="studentKqrlModal" class="modal-overlay">
-        <div class="modal-content" style="border-top-color: var(--success); width: 950px;">
+        <div class="modal-content" style="border-top-color: var(--success); width: 900px;">
             <button class="close-btn" onclick="closeModal('studentKqrlModal')">✕</button>
             <div class="modal-header">
-                <h2 style="color: var(--success);">📊 KẾT QUẢ RÈN LUYỆN: <span id="sk-name" style="color: var(--text-main);"></span></h2>
+                <h2 style="color: var(--success);">📊 KẾT QUẢ RÈN LUYỆN: <span id="sk-name"></span></h2>
             </div>
             
             <div class="score-mini-bar">
                 <div class="mini-stat ms-neutral"><label>Điểm Gốc</label><span>100</span></div>
-                <div class="mini-stat ms-red"><label>Điểm Trừ</label><span id="sk-minus">0</span></div>
+                <div class="mini-stat ms-red"><label>Tổng Điểm Trừ</label><span id="sk-minus">0</span></div>
                 <div class="mini-stat ms-blue"><label>Điểm Thưởng</label><span id="sk-plus">0</span></div>
-                <div class="mini-stat ms-orange"><label>TỔNG ĐIỂM</label><span id="sk-total">100</span></div>
+                <div class="mini-stat ms-orange" style="background:#fff3e0; border-color:#f39c12;"><label>TỔNG ĐIỂM</label><span id="sk-total" style="color:#e67e22;">100</span></div>
             </div>
 
             <div class="info-grid">
                 <div class="info-item bad">
-                    <label>⚠️ Vi phạm & Nghỉ học (<span id="sk-count-vp">0</span>)</label>
+                    <label>⚠️ VI PHẠM & NGHỈ HỌC (<span id="sk-count-vp">0</span>)</label>
                     <ul class="list-ul" id="sk-vipham-list"></ul>
                 </div>
                 <div class="info-item good">
-                    <label>🏆 Phong trào / HĐ (<span id="sk-count-pt">0</span>)</label>
+                    <label>🏆 PHONG TRÀO / HOẠT ĐỘNG (<span id="sk-count-pt">0</span>)</label>
                     <ul class="list-ul" id="sk-phongtrao-list"></ul>
                 </div>
-                <div class="info-item full-width" style="border-color: var(--purple); background: var(--purple-light);">
-                    <label style="color: var(--purple); border-bottom-color: #ddd6fe;">💡 NHẬN XÉT CỦA GVCN</label>
-                    <div id="sk-nhanxet" style="line-height: 1.6; color: var(--text-main); font-size: 15px;"></div>
+                <div class="info-item full-width" style="border-color: #8e44ad; background: #f9f4fd;">
+                    <label style="color: #8e44ad;">💡 NHẬN XÉT CỦA GVCN</label>
+                    <div id="sk-nhanxet" style="line-height: 1.6; color: #444; font-size: 14.5px;"></div>
                 </div>
-                <div class="info-item full-width" style="border-color: var(--success); background: #f0fdf4; text-align: center; padding: 25px;">
-                    <label style="justify-content: center; border:none; margin-bottom: 5px;">XẾP LOẠI RÈN LUYỆN DỰ KIẾN</label>
-                    <div id="sk-rank" style="font-size: 32px; font-weight: 900; text-transform: uppercase;"></div>
-                    <div id="sk-warn" style="color:var(--danger); font-size:14px; font-weight:bold; margin-top:8px; display:none;"></div>
+                <div class="info-item full-width" style="border-color: var(--success); background: #eafaf1; text-align: center;">
+                    <label>XẾP LOẠI RÈN LUYỆN DỰ KIẾN</label>
+                    <div id="sk-rank" style="font-size: 28px; font-weight: 900; text-transform: uppercase;"></div>
+                    <div id="sk-warn" style="color:#e74c3c; font-size:13px; font-weight:bold; margin-top:5px; display:none;"></div>
                 </div>
             </div>
         </div>
     </div>
 
     <div id="kqrlOverviewModal" class="modal-overlay">
-        <div class="modal-content" style="border-top-color: var(--purple); width: 850px;">
+        <div class="modal-content" style="border-top-color: var(--purple);">
             <button class="close-btn" onclick="closeModal('kqrlOverviewModal')">✕</button>
             <div class="modal-header">
-                <h2 style="color: var(--purple);">📈 TỔNG QUAN RÈN LUYỆN LỚP</h2>
+                <h2 style="color: var(--purple);">📈 TỔNG QUAN RÈN LUYỆN LỚP (TỰ ĐỘNG)</h2>
             </div>
             
-            <div class="score-mini-bar" style="grid-template-columns: repeat(3, 1fr);">
+            <div class="score-mini-bar">
                 <div class="mini-stat ms-red"><label>⚠️ Vi Phạm Lỗi</label><span id="k-total-vp">0</span></div>
-                <div class="mini-stat ms-blue"><label>🏆 Lượt Phong Trào</label><span id="k-total-pt">0</span></div>
-                <div class="mini-stat ms-orange"><label>📅 Lượt Vắng Học</label><span id="k-total-abs">0</span></div>
+                <div class="mini-stat ms-blue"><label>🏆 Phong Trào</label><span id="k-total-pt">0</span></div>
+                <div class="mini-stat ms-orange"><label>📅 Vắng Học</label><span id="k-total-abs">0</span></div>
             </div>
 
             <div class="info-grid">
                 <div class="info-item good"><label>⭐ BẢNG VÀNG (TOP ĐIỂM CAO)</label><ul class="list-ul" id="k-good-list"></ul></div>
-                <div class="info-item bad"><label>🚨 CẢNH BÁO KỶ LUẬT (ĐIỂM THẤP)</label><ul class="list-ul" id="k-bad-list"></ul></div>
-            </div>
-            
-            <div style="text-align: center; margin-top: 20px;">
-                <a href="kqrl.html" style="display: inline-block; background: var(--teal); color: white; text-decoration: none; padding: 12px 25px; border-radius: 8px; font-weight: bold; font-size: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: 0.3s;">Xem Bảng Điểm Rèn Luyện Toàn Lớp ➔</a>
+                <div class="info-item bad"><label>🚨 CẦN NHẮC NHỞ (CẢNH BÁO KỶ LUẬT)</label><ul class="list-ul" id="k-bad-list"></ul></div>
             </div>
         </div>
     </div>
@@ -467,14 +449,84 @@
     </div>
 
     <script>
+        // --- CHÌA KHÓA FIREBASE ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyCbA_3aOK2tOHFpWpJBnOMgcDfTHNf5pro",
+            authDomain: "quanlylop-ntb.firebaseapp.com",
+            projectId: "quanlylop-ntb",
+            storageBucket: "quanlylop-ntb.firebasestorage.app",
+            messagingSenderId: "332000248751",
+            appId: "1:332000248751:web:ebb85e784b5bde121e255a",
+            measurementId: "G-7DZQL7ELDQ"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        let currentUser = null;
+
         let studentsData = [];
         let currentEditIndex = -1;
-        
         let appConfig = { className: "11A7", teacherName: "Cam Bích Hằng", schoolYear: "2025-2026" };
 
         const SEVERE_KEYWORDS = ['thi cử', 'thi hk1', 'thi hk2', 'kttthk', 'kthk', 'gian lận', 'đánh nhau', 'thuốc lá', 'hút thuốc', 'vô lễ', 'xúc phạm'];
         const ACADEMIC_KEYWORDS = ['thuộc bài', 'làm bài', 'học bài', 'chuẩn bị', 'bài tập', 'tài liệu', 'dụng cụ', 'học tập', 'đề cương'];
 
+        // --- ĐĂNG NHẬP & ĐỒNG BỘ ĐÁM MÂY ---
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                currentUser = user;
+                syncFromCloud(); // Tải dữ liệu từ mây về khi vừa đăng nhập
+            } else {
+                window.location.href = 'login.html'; // Bắt buộc đăng nhập
+            }
+        });
+
+        function logout() {
+            auth.signOut();
+        }
+
+        function syncFromCloud() {
+            showStatus("☁️ Đang đồng bộ với đám mây...", false);
+            db.collection("quanlylop_data").doc(currentUser.uid).get().then(doc => {
+                if (doc.exists) {
+                    const data = doc.data();
+                    if (data.AppConfig) localStorage.setItem('AppConfig_Master', data.AppConfig);
+                    if (data.StudentsData) localStorage.setItem('DuLieu_Lop11_Master', data.StudentsData);
+                    
+                    loadConfig();
+                    const rawData = localStorage.getItem('DuLieu_Lop11_Master');
+                    if (rawData) { 
+                        studentsData = autoMigrateData(JSON.parse(rawData)); 
+                        renderStudentTable(); 
+                    }
+                    showStatus("✔️ Đã đồng bộ an toàn", true);
+                } else {
+                    loadConfig();
+                    showStatus("Trang trắng. Hãy tải Excel của cô lên", false);
+                }
+            }).catch(error => {
+                showStatus("Lỗi kết nối đám mây!", false);
+            });
+        }
+
+        function saveToCloud() {
+            if(!currentUser) return;
+            showStatus("☁️ Đang lưu lên mây...", false);
+            const configStr = localStorage.getItem('AppConfig_Master') || "";
+            const studentsStr = localStorage.getItem('DuLieu_Lop11_Master') || "[]";
+            
+            db.collection("quanlylop_data").doc(currentUser.uid).set({
+                AppConfig: configStr,
+                StudentsData: studentsStr,
+                lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+            }, { merge: true }).then(() => {
+                showStatus("✅ Đã sao lưu an toàn", true);
+            }).catch(err => {
+                showStatus("Lỗi lưu trữ đám mây!", false);
+            });
+        }
+
+        // --- CÁC HÀM CŨ ĐÃ ĐƯỢC CHÈN LỆNH LƯU ĐÁM MÂY ---
         function downloadSampleExcel() {
             const headers = [
                 "STT", "Họ và Tên", "Giới Tính", "Ngày Sinh", "Dân Tộc", "Tôn Giáo", "Địa Chỉ", "Số Điện Thoại",
@@ -499,6 +551,7 @@
                     localStorage.removeItem('DuLieu_Lop11_Master');
                     studentsData = [];
                     renderStudentTable();
+                    saveToCloud(); // Lưu rỗng lên mây
                     showStatus("Đã xóa sạch dữ liệu!", false);
                     alert("Đã xóa dữ liệu thành công! Bạn có thể tải lên file Excel mới.");
                 } else {
@@ -533,6 +586,7 @@
             localStorage.setItem('AppConfig_Master', JSON.stringify(appConfig));
             loadConfig();
             closeModal('configModal');
+            saveToCloud(); // Lưu cấu hình lên mây
             alert("✅ Đã lưu cài đặt thông chung!");
         }
 
@@ -593,7 +647,7 @@
         }
 
         function generateTeacherComment(scoreObj) {
-            let klTxt = scoreObj.severeCount > 0 ? "<span style='color:var(--danger); font-weight:bold;'>Đã vi phạm lỗi nghiêm trọng nội quy trường/lớp. Đề nghị gia đình phối hợp sát sao để giáo dục.</span>" : scoreObj.rawErrors === 0 ? "Thực hiện rất tốt nội quy của trường, lớp; có ý thức kỷ luật và tự giác cao." : "Cơ bản chấp hành nội quy, tuy nhiên đôi lúc còn vi phạm lỗi nề nếp nhỏ, cần chú ý khắc phục.";
+            let klTxt = scoreObj.severeCount > 0 ? "<span style='color:#e74c3c; font-weight:bold;'>Đã vi phạm lỗi nghiêm trọng nội quy trường/lớp. Đề nghị gia đình phối hợp sát sao để giáo dục.</span>" : scoreObj.rawErrors === 0 ? "Thực hiện rất tốt nội quy của trường, lớp; có ý thức kỷ luật và tự giác cao." : "Cơ bản chấp hành nội quy, tuy nhiên đôi lúc còn vi phạm lỗi nề nếp nhỏ, cần chú ý khắc phục.";
             if (scoreObj.rawErrors > 3 && scoreObj.severeCount === 0) klTxt = `Thường xuyên vi phạm nội quy (${scoreObj.rawErrors} lỗi). Ý thức kỷ luật chưa cao, cần nghiêm túc chấn chỉnh.`;
             
             let ptTxt = scoreObj.ptCount >= 5 ? "Rất năng nổ, nhiệt tình, đóng góp tích cực vào các hoạt động phong trào của tập thể. Rất đáng tuyên dương!" : scoreObj.ptCount > 0 ? "Có tinh thần tham gia phong trào chung của lớp. Tiếp tục phát huy." : "Chưa tích cực tham gia các phong trào chung. Khuyến khích tham gia nhiều hơn để hòa đồng cùng tập thể.";
@@ -601,7 +655,7 @@
             let ccTxt = "";
             const totalAbs = scoreObj.cpCount + scoreObj.kpCount;
             if (totalAbs === 0) ccTxt = "Đảm bảo chuyên cần, đi học đầy đủ.";
-            else if (scoreObj.kpCount > 0) ccTxt = `<span style='color:var(--danger); font-weight:bold;'>Đi học chưa chuyên cần, còn vắng KHÔNG phép ${scoreObj.kpCount} buổi. Gia đình cần kiểm tra lại giờ giấc của em.</span>`;
+            else if (scoreObj.kpCount > 0) ccTxt = `<span style='color:#e74c3c;'>Đi học chưa chuyên cần, còn vắng KHÔNG phép ${scoreObj.kpCount} buổi. Gia đình cần kiểm tra lại giờ giấc của em.</span>`;
             else if (scoreObj.cpCount > 4) ccTxt = `Nghỉ học có phép khá nhiều (${scoreObj.cpCount} buổi) làm ảnh hưởng điểm rèn luyện. Cần chú ý mượn vở bạn chép bài đầy đủ.`;
             else ccTxt = `Đi học cơ bản đầy đủ, có nghỉ ốm/có phép ${scoreObj.cpCount} buổi.`;
 
@@ -609,9 +663,13 @@
         }
 
         window.onload = function() {
+            // Khởi tạo hiển thị tạm từ Local, AuthState sẽ lo việc kéo mây
             loadConfig();
             const rawData = localStorage.getItem('DuLieu_Lop11_Master');
-            if (rawData) { studentsData = autoMigrateData(JSON.parse(rawData)); showStatus("✔️ Dữ liệu đã được nạp", true); renderStudentTable(); }
+            if (rawData) { 
+                studentsData = autoMigrateData(JSON.parse(rawData)); 
+                renderStudentTable(); 
+            }
         }
 
         document.getElementById('excelFile').addEventListener('change', function(e) {
@@ -629,7 +687,9 @@
                     });
                     studentsData = autoMigrateData(studentsData);
                     localStorage.setItem('DuLieu_Lop11_Master', JSON.stringify(studentsData));
-                    showStatus("✅ Đã cập nhật lớp", true); renderStudentTable();
+                    showStatus("✅ Đã cập nhật lớp", true); 
+                    renderStudentTable();
+                    saveToCloud(); // Lưu danh sách lớp lên mây
                 } catch (error) { showStatus("Lỗi đọc file!", false); }
             };
             reader.readAsArrayBuffer(file);
@@ -643,7 +703,7 @@
 
         function renderStudentTable() {
             const tbody = document.getElementById('studentTableBody');
-            if(studentsData.length === 0) { tbody.innerHTML = '<tr><td colspan="5" style="padding:50px; font-style:italic; color:var(--text-muted);">Chưa có dữ liệu học sinh. Vui lòng cập nhật Excel.</td></tr>'; return; }
+            if(studentsData.length === 0) { tbody.innerHTML = '<tr><td colspan=\"5\" style=\"padding:40px; font-style:italic; color:#7f8c8d;\">Chưa có dữ liệu học sinh. Vui lòng bấm \"Cập nhật từ Excel\" ở góc phải để nạp danh sách lớp.</td></tr>'; return; }
             tbody.innerHTML = studentsData.map((s, i) => `
                 <tr>
                     <td><b>${s.STT || i+1}</b></td>
@@ -652,10 +712,10 @@
                     <td>${s["Ngày Sinh"] || "--"}</td>
                     <td>
                         <div class="action-btns">
-                            <button class="btn-action btn-view" onclick="viewProfile(${i})">👤 Lý Lịch</button>
-                            <button class="btn-action btn-edit" onclick="openEditModal(${i})">✏️ Sửa</button>
-                            <button class="btn-action btn-kqrl" onclick="viewStudentKqrl(${i})">📊 Xem ĐRL</button>
-                            <button class="btn-action btn-print" onclick="printStudentInfo(${i})">🖨️ In</button>
+                            <button class="btn-action btn-view" onclick="viewProfile(${i})">👤 Xem LL</button>
+                            <button class="btn-action btn-edit" onclick="openEditModal(${i})">✏️ Sửa LL</button>
+                            <button class="btn-action btn-print" onclick="printStudentInfo(${i})">🖨️ In KQRL</button>
+                            <button class="btn-action btn-kqrl" onclick="viewStudentKqrl(${i})">📊 Xem KQRL</button>
                         </div>
                     </td>
                 </tr>
@@ -739,7 +799,10 @@
             s["Môn Học Sợ Nhất"] = document.getElementById('ep-hate-subject').value;
 
             localStorage.setItem('DuLieu_Lop11_Master', JSON.stringify(studentsData));
-            closeModal('editProfileModal'); renderStudentTable(); alert("💾 Đã đồng bộ thông tin lý lịch!");
+            closeModal('editProfileModal'); 
+            renderStudentTable(); 
+            saveToCloud(); // Lưu lý lịch lên mây
+            alert("💾 Đã đồng bộ thông tin lý lịch!");
         }
 
         function viewStudentKqrl(index) {
@@ -750,15 +813,15 @@
             document.getElementById('sk-total').innerText = sc.total;
             
             const xlBox = document.getElementById('sk-rank'); xlBox.innerText = sc.rank;
-            xlBox.style.color = sc.rank==='TỐT'?'var(--success)':sc.rank==='KHÁ'?'var(--info)':'var(--warning)';
+            xlBox.style.color = sc.rank==='TỐT'?'#27ae60':sc.rank==='KHÁ'?'#3498DB':'#f39c12';
 
             document.getElementById('sk-nhanxet').innerHTML = generateTeacherComment(sc);
 
             let vpHTML = s.logs.vipham.map(l=>`<li><b>${l.text}</b><small>${l.date}</small></li>`).join('') + 
-                         s.logs.vangKhongPhep.map(l=>`<li><b style="color:var(--danger)">Nghỉ KP: ${l.text}</b><small>${l.date}</small></li>`).join('') +
+                         s.logs.vangKhongPhep.map(l=>`<li><b style="color:red">Nghỉ KP: ${l.text}</b><small>${l.date}</small></li>`).join('') +
                          s.logs.vangCoPhep.map(l=>`<li><b>Nghỉ CP: ${l.text}</b><small>${l.date}</small></li>`).join('');
-            document.getElementById('sk-vipham-list').innerHTML = vpHTML || '<li><span style="color:var(--text-muted)">Không có vi phạm</span></li>';
-            document.getElementById('sk-phongtrao-list').innerHTML = s.logs.phongtrao.map(l=>`<li><b style="color:var(--primary-blue)">${l.text} (+1đ)</b><small>${l.date}</small></li>`).join('') || '<li><span style="color:var(--text-muted)">Chưa tham gia phong trào</span></li>';
+            document.getElementById('sk-vipham-list').innerHTML = vpHTML || '<li>Không vi phạm</li>';
+            document.getElementById('sk-phongtrao-list').innerHTML = s.logs.phongtrao.map(l=>`<li><b>${l.text} (+1đ)</b><small>${l.date}</small></li>`).join('') || '<li>Chưa tham gia phong trào</li>';
             document.getElementById('studentKqrlModal').classList.add('active');
         }
 
@@ -773,10 +836,10 @@
             document.getElementById('k-total-pt').innerText = totalPt;
             document.getElementById('k-total-abs').innerText = totalAbs;
             
-            let goodList = [...rankData].filter(s=>s.score.rank==='TỐT').sort((a,b) => b.score.total - a.score.total).slice(0,5);
-            document.getElementById('k-good-list').innerHTML = goodList.map(s=>`<li><b>${s.name}</b><span class="badge" style="color:var(--success); font-weight:800;">${s.score.total}đ</span></li>`).join('') || '<li>Trống</li>';
-            let badList = [...rankData].filter(s=>s.score.total < 85).sort((a,b) => a.score.total - b.score.total).slice(0,5);
-            document.getElementById('k-bad-list').innerHTML = badList.map(s=>`<li><b>${s.name}</b><span class="badge" style="color:var(--danger); font-weight:800;">${s.score.total}đ</span></li>`).join('') || '<li><span style="color:var(--success)">Không có học sinh điểm thấp</span></li>';
+            let goodList = [...rankData].filter(s=>s.score.rank==='TỐT').slice(0,5);
+            document.getElementById('k-good-list').innerHTML = goodList.map(s=>`<li><b>${s.name}</b><span class="badge" style="color:var(--success);">${s.score.total}đ</span></li>`).join('') || '<li>Trống</li>';
+            let badList = [...rankData].filter(s=>s.score.total < 85).slice(0,5);
+            document.getElementById('k-bad-list').innerHTML = badList.map(s=>`<li><b>${s.name}</b><span class="badge" style="color:var(--danger);">${s.score.total}đ</span></li>`).join('') || '<li>Trống</li>';
             document.getElementById('kqrlOverviewModal').classList.add('active');
         }
 

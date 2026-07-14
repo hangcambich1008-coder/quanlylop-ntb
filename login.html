@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng Nhập - Hệ Thống Quản Lý Lớp</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+    
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #FFF9F5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .login-box { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(255, 126, 0, 0.1); width: 100%; max-width: 380px; text-align: center; border-top: 6px solid #FF7E00; }
+        h1 { margin: 0 0 10px 0; color: #E65100; font-weight: 900; font-size: 24px; }
+        p { color: #64748b; margin-bottom: 25px; font-size: 14px; font-weight: 600;}
+        input { width: 100%; padding: 15px; margin-bottom: 15px; border: 1px solid #e2e8f0; border-radius: 10px; box-sizing: border-box; font-size: 14px; font-family: inherit; outline: none; transition: 0.2s; font-weight: bold; color: #2D3436;}
+        input:focus { border-color: #FF7E00; box-shadow: 0 0 0 3px #FFF0E3; }
+        button { width: 100%; padding: 15px; border: none; border-radius: 10px; font-weight: 800; font-size: 15px; cursor: pointer; transition: 0.2s; font-family: inherit; margin-bottom: 10px; }
+        .btn-login { background: linear-gradient(135deg, #FF7E00, #E65100); color: white; box-shadow: 0 4px 10px rgba(234, 88, 12, 0.2); }
+        .btn-login:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(234, 88, 12, 0.3); }
+        .btn-register { background: white; color: #3498DB; border: 1px solid #bae6fd; }
+        .btn-register:hover { background: #f0f9ff; border-color: #3498DB;}
+        .error { color: #e74c3c; font-size: 13px; font-weight: bold; margin-bottom: 15px; display: none; background: #fdf2f1; padding: 10px; border-radius: 8px;}
+    </style>
+</head>
+<body>
+
+<div class="login-box">
+    <h1>HỆ THỐNG QUẢN LÝ LỚP</h1>
+    <p>Đăng nhập để đồng bộ dữ liệu đám mây</p>
+    
+    <div id="error-msg" class="error"></div>
+    
+    <input type="email" id="email" placeholder="Email của cô (VD: gvcn@gmail.com)">
+    <input type="password" id="password" placeholder="Mật khẩu (Ít nhất 6 ký tự)">
+    
+    <button class="btn-login" onclick="login()">Đăng Nhập</button>
+    <button class="btn-register" onclick="register()">Tạo Tài Khoản Mới</button>
+</div>
+
+<script>
+    // Chìa khóa Firebase của cô
+    const firebaseConfig = {
+        apiKey: "AIzaSyCbA_3aOK2tOHFpWpJBnOMgcDfTHNf5pro",
+        authDomain: "quanlylop-ntb.firebaseapp.com",
+        projectId: "quanlylop-ntb",
+        storageBucket: "quanlylop-ntb.firebasestorage.app",
+        messagingSenderId: "332000248751",
+        appId: "1:332000248751:web:ebb85e784b5bde121e255a",
+        measurementId: "G-7DZQL7ELDQ"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    // Kiểm tra nếu đã đăng nhập rồi thì tự động vào trang chủ
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            window.location.href = 'index.html'; 
+        }
+    });
+
+    function showError(msg) {
+        const errDiv = document.getElementById('error-msg');
+        errDiv.innerText = msg;
+        errDiv.style.display = 'block';
+    }
+
+    function login() {
+        const e = document.getElementById('email').value;
+        const p = document.getElementById('password').value;
+        if(!e || !p) return showError('Vui lòng nhập đầy đủ Email và Mật khẩu!');
+        
+        auth.signInWithEmailAndPassword(e, p)
+            .then(() => window.location.href = 'index.html')
+            .catch(err => showError('Sai email hoặc mật khẩu!'));
+    }
+
+    function register() {
+        const e = document.getElementById('email').value;
+        const p = document.getElementById('password').value;
+        if(!e || !p) return showError('Vui lòng nhập Email và Mật khẩu để đăng ký!');
+        if(p.length < 6) return showError('Mật khẩu phải từ 6 ký tự trở lên!');
+        
+        auth.createUserWithEmailAndPassword(e, p)
+            .then(() => {
+                alert('Đăng ký thành công! Đang tự động đăng nhập...');
+                window.location.href = 'index.html';
+            })
+            .catch(err => {
+                if (err.code === 'auth/email-already-in-use') showError('Email này đã có người đăng ký!');
+                else showError('Lỗi đăng ký: ' + err.message);
+            });
+    }
+</script>
+</body>
+</html>
