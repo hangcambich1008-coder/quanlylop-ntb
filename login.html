@@ -14,14 +14,27 @@
         .login-box { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(255, 126, 0, 0.1); width: 100%; max-width: 380px; text-align: center; border-top: 6px solid #FF7E00; }
         h1 { margin: 0 0 10px 0; color: #E65100; font-weight: 900; font-size: 24px; }
         p { color: #64748b; margin-bottom: 25px; font-size: 14px; font-weight: 600;}
-        input { width: 100%; padding: 15px; margin-bottom: 15px; border: 1px solid #e2e8f0; border-radius: 10px; box-sizing: border-box; font-size: 14px; font-family: inherit; outline: none; transition: 0.2s; font-weight: bold; color: #2D3436;}
+        
+        .input-group { position: relative; margin-bottom: 15px; width: 100%; }
+        input { width: 100%; padding: 15px; border: 1px solid #e2e8f0; border-radius: 10px; box-sizing: border-box; font-size: 14px; font-family: inherit; outline: none; transition: 0.2s; font-weight: bold; color: #2D3436;}
         input:focus { border-color: #FF7E00; box-shadow: 0 0 0 3px #FFF0E3; }
-        button { width: 100%; padding: 15px; border: none; border-radius: 10px; font-weight: 800; font-size: 15px; cursor: pointer; transition: 0.2s; font-family: inherit; margin-bottom: 10px; }
+        
+        /* Chỉnh CSS để tránh chữ bị đè lên con mắt */
+        .pwd-wrapper input { padding-right: 45px; } 
+        .toggle-pwd { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer; user-select: none; font-size: 18px; color: #94a3b8; transition: 0.2s; }
+        .toggle-pwd:hover { color: #FF7E00; }
+
+        .btn-forgot { background: transparent; color: #64748b; border: none; font-size: 13px; font-weight: 700; text-decoration: underline; cursor: pointer; margin-bottom: 20px; display: block; text-align: right; width: 100%; transition: 0.2s; padding: 0; }
+        .btn-forgot:hover { color: #E65100; }
+
+        button.btn-main { width: 100%; padding: 15px; border: none; border-radius: 10px; font-weight: 800; font-size: 15px; cursor: pointer; transition: 0.2s; font-family: inherit; margin-bottom: 10px; }
         .btn-login { background: linear-gradient(135deg, #FF7E00, #E65100); color: white; box-shadow: 0 4px 10px rgba(234, 88, 12, 0.2); }
         .btn-login:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(234, 88, 12, 0.3); }
         .btn-register { background: white; color: #3498DB; border: 1px solid #bae6fd; }
         .btn-register:hover { background: #f0f9ff; border-color: #3498DB;}
+        
         .error { color: #e74c3c; font-size: 13px; font-weight: bold; margin-bottom: 15px; display: none; background: #fdf2f1; padding: 10px; border-radius: 8px;}
+        .success { color: #059669; font-size: 13px; font-weight: bold; margin-bottom: 15px; display: none; background: #ecfdf5; padding: 10px; border-radius: 8px;}
     </style>
 </head>
 <body>
@@ -31,12 +44,21 @@
     <p>Đăng nhập để đồng bộ dữ liệu đám mây</p>
     
     <div id="error-msg" class="error"></div>
+    <div id="success-msg" class="success"></div>
     
-    <input type="email" id="email" placeholder="Email của cô (VD: gvcn@gmail.com)">
-    <input type="password" id="password" placeholder="Mật khẩu (Ít nhất 6 ký tự)">
+    <div class="input-group">
+        <input type="email" id="email" placeholder="Email của thầy/cô (VD: gvcn@gmail.com)">
+    </div>
     
-    <button class="btn-login" onclick="login()">Đăng Nhập</button>
-    <button class="btn-register" onclick="register()">Tạo Tài Khoản Mới</button>
+    <div class="input-group pwd-wrapper">
+        <input type="password" id="password" placeholder="Mật khẩu (Ít nhất 6 ký tự)">
+        <span class="toggle-pwd" id="eyeIcon" onclick="togglePassword()" title="Hiện mật khẩu">👁️</span>
+    </div>
+
+    <button class="btn-forgot" onclick="resetPassword()">Quên / Đổi mật khẩu?</button>
+    
+    <button class="btn-main btn-login" onclick="login()">Đăng Nhập</button>
+    <button class="btn-main btn-register" onclick="register()">Tạo Tài Khoản Mới</button>
 </div>
 
 <script>
@@ -53,7 +75,6 @@
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
 
-    // Kiểm tra nếu đã đăng nhập rồi thì tự động vào trang chủ
     auth.onAuthStateChanged(user => {
         if (user) {
             window.location.href = 'index.html'; 
@@ -62,12 +83,59 @@
 
     function showError(msg) {
         const errDiv = document.getElementById('error-msg');
+        const sucDiv = document.getElementById('success-msg');
+        sucDiv.style.display = 'none';
         errDiv.innerText = msg;
         errDiv.style.display = 'block';
     }
 
+    function showSuccess(msg) {
+        const errDiv = document.getElementById('error-msg');
+        const sucDiv = document.getElementById('success-msg');
+        errDiv.style.display = 'none';
+        sucDiv.innerText = msg;
+        sucDiv.style.display = 'block';
+    }
+
+    // Hàm Xử lý Hiện/Ẩn mật khẩu
+    function togglePassword() {
+        const pwdInput = document.getElementById('password');
+        const eyeIcon = document.getElementById('eyeIcon');
+        if (pwdInput.type === 'password') {
+            pwdInput.type = 'text';
+            eyeIcon.innerText = '🙈'; // Đổi icon khi hiện
+            eyeIcon.title = 'Ẩn mật khẩu';
+        } else {
+            pwdInput.type = 'password';
+            eyeIcon.innerText = '👁️'; // Đổi icon khi ẩn
+            eyeIcon.title = 'Hiện mật khẩu';
+        }
+    }
+
+    // Hàm Xử lý Quên / Đổi mật khẩu
+    function resetPassword() {
+        const e = document.getElementById('email').value.trim();
+        if(!e) {
+            return showError('Vui lòng nhập Email của thầy/cô vào ô trên cùng trước khi bấm Đổi mật khẩu!');
+        }
+        
+        auth.sendPasswordResetEmail(e)
+            .then(() => {
+                showSuccess('Đã gửi link đổi mật khẩu! Thầy/Cô vui lòng kiểm tra hộp thư Email (kiểm tra cả mục Spam/Thư rác nếu không thấy).');
+            })
+            .catch(err => {
+                if (err.code === 'auth/user-not-found') {
+                    showError('Email này chưa được đăng ký tài khoản!');
+                } else if (err.code === 'auth/invalid-email') {
+                    showError('Định dạng email không hợp lệ!');
+                } else {
+                    showError('Lỗi: ' + err.message);
+                }
+            });
+    }
+
     function login() {
-        const e = document.getElementById('email').value;
+        const e = document.getElementById('email').value.trim();
         const p = document.getElementById('password').value;
         if(!e || !p) return showError('Vui lòng nhập đầy đủ Email và Mật khẩu!');
         
@@ -77,7 +145,7 @@
     }
 
     function register() {
-        const e = document.getElementById('email').value;
+        const e = document.getElementById('email').value.trim();
         const p = document.getElementById('password').value;
         if(!e || !p) return showError('Vui lòng nhập Email và Mật khẩu để đăng ký!');
         if(p.length < 6) return showError('Mật khẩu phải từ 6 ký tự trở lên!');
